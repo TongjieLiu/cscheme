@@ -23,6 +23,7 @@
 #include "ef.h"
 #include "gc.h"
 #include "core.h"
+#include "tco.h"
 #include "begin.h"
 
 
@@ -92,12 +93,18 @@ CSCM_OBJECT *_cscm_seq_ef(void *state, CSCM_OBJECT *env)
 {
 	int i, end;
 
-	CSCM_OBJECT *ret;
-
 	CSCM_SEQ_EF_STATE *s;
+	int flag_tco_allow;
+
+	CSCM_EF *last_clause_ef;
+	CSCM_OBJECT *ret;
 
 
 	s = (CSCM_SEQ_EF_STATE *)state;
+
+
+	flag_tco_allow = cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW);
+	cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 
 	end = s->n_clause_efs - 1;
@@ -109,7 +116,18 @@ CSCM_OBJECT *_cscm_seq_ef(void *state, CSCM_OBJECT *env)
 	}
 
 
-	ret = cscm_ef_exec(s->clause_efs[i], env);
+	last_clause_ef = s->clause_efs[i];
+
+
+	if (flag_tco_allow) // restore the original value of the flag
+		cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
+
+	if (last_clause_ef->type != CSCM_EF_TYPE_COMBINATION \
+		&& last_clause_ef->type != CSCM_EF_TYPE_IF)
+		cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
+
+
+	ret = cscm_ef_exec(last_clause_ef, env);
 
 
 	return ret; // return the value of the last clause in the sequence

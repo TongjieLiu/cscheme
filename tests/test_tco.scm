@@ -26,4 +26,6 @@
 
 
 
+;	This program will run a very long time if we've succeeded
+; in implementing tail-call optimization feature into cscheme.
 (test-tco)

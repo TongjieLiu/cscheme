@@ -37,6 +37,7 @@
 #include "quote.h"
 #include "gc.h"
 #include "env.h"
+#include "tco.h"
 #include "core.h"
 
 
@@ -188,16 +189,37 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *operator, \
 		env = cscm_env_cpy_extend(env, frame);
 
 
+		if (!cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW)) {
+			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
+		} else {
+			cscm_tco_state_save(env, body_ef);
+			return NULL;
+		}
+
 		ret = cscm_ef_exec(body_ef, env);
 
 
-		if (ret)
+		while (cscm_tco_get_flag(CSCM_TCO_FLAG_STATE_SAVED)) {
+			cscm_gc_free(env);
+
+			env = cscm_tco_state_get_new_env();
+			body_ef = cscm_tco_state_get_new_body_ef();
+
+			cscm_tco_unset_flag(CSCM_TCO_FLAG_STATE_SAVED);
+
+			ret = cscm_ef_exec(body_ef, env);
+		}
+
+		cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
+
+
+		if (ret) {
 			cscm_gc_inc(ret); // try to save it from freeing env
-
-		cscm_gc_free(env);
-
-		if (ret)
+			cscm_gc_free(env);
 			cscm_gc_dec(ret);
+		} else {
+			cscm_gc_free(env);
+		}
 	} else {
 		cscm_error_report("cscm_apply", CSCM_ERROR_OBJECT_TYPE);
 	}
@@ -253,25 +275,38 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 {
 	int i;
 
-	CSCM_OBJECT *ret;
+	CSCM_COMBINATION_EF_STATE *s;
+	int flag_tco_allow;
 
 	CSCM_OBJECT *operator, **args;
 
-	CSCM_COMBINATION_EF_STATE *s;
+	CSCM_OBJECT *ret;
 
 
 	s = (CSCM_COMBINATION_EF_STATE *)state;
+
+
+	flag_tco_allow = cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW);
+	cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 
 	operator = cscm_ef_exec(s->operator_ef, env);
 
 
 	if (s->n_arg_efs == 0) {
+		if (flag_tco_allow) // restore the original value of the flag
+			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
+
+
 		ret = cscm_apply(operator, 0, NULL);
 	} else {
 		args = cscm_object_ptrs_create(s->n_arg_efs);
 		for (i = 0; i < s->n_arg_efs; i++)
 			args[i] = cscm_ef_exec(s->arg_efs[i], env);
+
+
+		if (flag_tco_allow) // restore the original value of the flag
+			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 
 
 		ret = cscm_apply(operator, s->n_arg_efs, args);

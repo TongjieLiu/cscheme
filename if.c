@@ -23,6 +23,7 @@
 #include "ef.h"
 #include "core.h"
 #include "bool.h"
+#include "tco.h"
 #include "if.h"
 
 
@@ -84,22 +85,47 @@ CSCM_IF_EF_STATE *_cscm_if_ef_state_create()
 CSCM_OBJECT *_cscm_if_ef(void *state, CSCM_OBJECT *env)
 {
 	CSCM_IF_EF_STATE *s;
+	int flag_tco_allow;
 
 	CSCM_OBJECT *result;
 
+	CSCM_EF *ef;
 	CSCM_OBJECT *ret;
 
 
 	s = (CSCM_IF_EF_STATE *)state;
 
+
+	flag_tco_allow = cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW);
+
+
+	cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 	result = cscm_ef_exec(s->predicate_ef, env);
+
+
+	if (flag_tco_allow) // restore the original value of the flag
+		cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
+
 	if (result == CSCM_FALSE) {
-		if (s->alternative_ef)
-			ret = cscm_ef_exec(s->alternative_ef, env);
-		else // an if expression without the alternative expression
+		if (s->alternative_ef) {
+			ef = s->alternative_ef;
+
+			if (ef->type != CSCM_EF_TYPE_COMBINATION \
+				&& ef->type != CSCM_EF_TYPE_IF)
+				cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
+
+			ret = cscm_ef_exec(ef, env);
+		} else { // an if expression without the alternative expression
 			ret = NULL;
+		}
 	} else {
-		ret = cscm_ef_exec(s->consequent_ef, env);
+		ef = s->consequent_ef;
+
+		if (ef->type != CSCM_EF_TYPE_COMBINATION \
+			&& ef->type != CSCM_EF_TYPE_IF)
+			cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
+
+		ret = cscm_ef_exec(ef, env);
 	}
 
 

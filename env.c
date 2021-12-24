@@ -72,12 +72,15 @@ void cscm_frame_init(CSCM_OBJECT *frame_obj, \
 	CSCM_FRAME *frame;
 
 
-	if (frame_obj == NULL || frame_obj->value == NULL)
+	if (frame_obj == NULL)
 		cscm_error_report("cscm_frame_init", \
 				CSCM_ERROR_NULL_PTR);
 	else if (frame_obj->type != CSCM_OBJECT_TYPE_FRAME)
 		cscm_error_report("cscm_frame_init", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (frame_obj->value == NULL)
+		cscm_error_report("cscm_frame_init", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	frame = (CSCM_FRAME *)frame_obj->value;
@@ -130,12 +133,15 @@ void cscm_frame_add_var(CSCM_OBJECT *frame_obj, char *var, CSCM_OBJECT *val)
 	CSCM_FRAME *frame;
 
 
-	if (frame_obj == NULL || frame_obj->value == NULL)
+	if (frame_obj == NULL)
 		cscm_error_report("cscm_frame_add_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (frame_obj->type != CSCM_OBJECT_TYPE_FRAME)
 		cscm_error_report("cscm_frame_add_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (frame_obj->value == NULL)
+		cscm_error_report("cscm_frame_add_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL || *var == 0)
 		cscm_error_report("cscm_frame_add_var", \
 				CSCM_ERROR_FRAME_NO_VAR);
@@ -188,12 +194,15 @@ CSCM_OBJECT *cscm_frame_get_var(CSCM_OBJECT *frame_obj, char *var)
 	CSCM_FRAME *frame;
 
 
-	if (frame_obj == NULL || frame_obj->value == NULL)
+	if (frame_obj == NULL)
 		cscm_error_report("cscm_frame_get_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (frame_obj->type != CSCM_OBJECT_TYPE_FRAME)
 		cscm_error_report("cscm_frame_get_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (frame_obj->value == NULL)
+		cscm_error_report("cscm_frame_get_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL || *var == 0)
 		cscm_error_report("cscm_frame_get_var", \
 				CSCM_ERROR_FRAME_NO_VAR);
@@ -228,12 +237,15 @@ void cscm_frame_set_var(CSCM_OBJECT *frame_obj, char *var, CSCM_OBJECT *val)
 	CSCM_FRAME *frame;
 
 
-	if (frame_obj == NULL || frame_obj->value == NULL)
+	if (frame_obj == NULL)
 		cscm_error_report("cscm_frame_set_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (frame_obj->type != CSCM_OBJECT_TYPE_FRAME)
 		cscm_error_report("cscm_frame_set_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (frame_obj->value == NULL)
+		cscm_error_report("cscm_frame_set_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL || *var == 0)
 		cscm_error_report("cscm_frame_set_var", \
 				CSCM_ERROR_FRAME_NO_VAR);
@@ -304,12 +316,15 @@ CSCM_OBJECT *cscm_env_cpy_extend(CSCM_OBJECT *env_obj, CSCM_OBJECT *frame)
 	CSCM_OBJECT **frames_buf;
 
 
-	if (env_obj == NULL || env_obj->value == NULL)
+	if (env_obj == NULL)
 		cscm_error_report("cscm_env_cpy_extend", \
 				CSCM_ERROR_NULL_PTR);
 	else if (env_obj->type != CSCM_OBJECT_TYPE_ENV)
 		cscm_error_report("cscm_env_cpy_extend", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (env_obj->value == NULL)
+		cscm_error_report("cscm_env_cpy_extend", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	env = (CSCM_ENV *)env_obj->value;
@@ -357,12 +372,15 @@ CSCM_OBJECT *cscm_env_get_var(CSCM_OBJECT *env_obj, char *var)
 	CSCM_OBJECT *val;
 
 
-	if (env_obj == NULL || env_obj->value == NULL)
+	if (env_obj == NULL)
 		cscm_error_report("cscm_env_get_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (env_obj->type != CSCM_OBJECT_TYPE_ENV)
 		cscm_error_report("cscm_env_get_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (env_obj->value == NULL)
+		cscm_error_report("cscm_env_get_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL)
 		cscm_error_report("cscm_env_get_var", \
 				CSCM_ERROR_ENV_NO_VAR);
@@ -391,12 +409,15 @@ void cscm_env_set_var(CSCM_OBJECT *env_obj, char *var, CSCM_OBJECT *val)
 	CSCM_OBJECT *old_val;
 
 
-	if (env_obj == NULL || env_obj->value == NULL)
+	if (env_obj == NULL)
 		cscm_error_report("cscm_env_set_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (env_obj->type != CSCM_OBJECT_TYPE_ENV)
 		cscm_error_report("cscm_env_set_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (env_obj->value == NULL)
+		cscm_error_report("cscm_env_set_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL)
 		cscm_error_report("cscm_env_set_var", \
 				CSCM_ERROR_ENV_NO_VAR);
@@ -428,12 +449,15 @@ void cscm_env_add_var(CSCM_OBJECT *env_obj, char *var, CSCM_OBJECT *val)
 	CSCM_ENV *env;
 
 
-	if (env_obj == NULL || env_obj->value == NULL)
+	if (env_obj == NULL)
 		cscm_error_report("cscm_env_add_var", \
 				CSCM_ERROR_NULL_PTR);
 	else if (env_obj->type != CSCM_OBJECT_TYPE_ENV)
 		cscm_error_report("cscm_env_add_var", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (env_obj->value == NULL)
+		cscm_error_report("cscm_env_add_var", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (var == NULL)
 		cscm_error_report("cscm_env_add_var", \
 				CSCM_ERROR_ENV_NO_VAR);
@@ -500,6 +524,7 @@ char *_cscm_env_builtin_names[] = {
 	"string?", "symbol?", "number?", "pair?", "null?",
 	"include",
 	"max", "min",
+	"apply",
 
 	NULL
 };
@@ -560,6 +585,8 @@ CSCM_PROC_PRIM_FUNC _cscm_env_builtin_pp_funcs[] = {
 
 	cscm_builtin_proc_max,
 	cscm_builtin_proc_min,
+
+	cscm_builtin_proc_apply,
 
 	NULL
 };

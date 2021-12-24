@@ -212,7 +212,7 @@ CSCM_OBJECT *cscm_builtin_proc_read(size_t n, CSCM_OBJECT **args)
 	CSCM_AST_NODE *list_ast;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_newline",	\
+	cscm_builtin_check_args("cscm_builtin_proc_read",	\
 				0,				\
 				n,				\
 				args);
@@ -1262,6 +1262,48 @@ CSCM_OBJECT *cscm_builtin_proc_min(size_t n, CSCM_OBJECT **args)
 		ret = cscm_num_double_create();
 		cscm_num_double_set(ret, min_double_number);
 	}
+
+
+	return ret;
+}
+
+
+
+
+CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *proc, *arg_list;
+	CSCM_OBJECT **arg_obj_ptrs;
+
+	CSCM_OBJECT *ret;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_apply",	\
+				2,				\
+				n,				\
+				args);
+
+
+	proc = args[0];
+	arg_list = args[1];
+
+
+	if (proc->type != CSCM_OBJECT_TYPE_PROC_PRIM \
+		&& proc->type != CSCM_OBJECT_TYPE_PROC_COMP)
+		cscm_error_report("cscm_builtin_proc_apply", \
+				CSCM_ERROR_OBJECT_TYPE);
+	else if (arg_list->type != CSCM_OBJECT_TYPE_PAIR)
+		cscm_error_report("cscm_builtin_proc_apply", \
+				CSCM_ERROR_OBJECT_TYPE);
+
+
+	arg_obj_ptrs = cscm_list_to_object_ptrs(arg_list);
+
+	ret = cscm_apply(proc,			\
+		cscm_list_get_len(arg_list),	\
+		arg_obj_ptrs);
+
+	free(arg_obj_ptrs);
 
 
 	return ret;

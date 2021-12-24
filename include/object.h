@@ -88,6 +88,7 @@ void cscm_object_free(CSCM_OBJECT *obj);
 
 
 #define CSCM_ERROR_OBJECT_TYPE		"incorrect object type"
+#define CSCM_ERROR_EMPTY_OBJECT		"empty object(object->value = NULL)"
 
 
 #define CSCM_ERROR_OBJECT_ZERO_PTR	"requesting zero pointer"

@@ -133,7 +133,7 @@ CSCM_EF *cscm_analyze(CSCM_AST_NODE *exp)
 
 
 
-CSCM_OBJECT *cscm_apply(CSCM_OBJECT *operator, \
+CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 			size_t n_args, CSCM_OBJECT **args)
 {
 	int i;
@@ -150,27 +150,27 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *operator, \
 	CSCM_OBJECT *frame;
 
 
-	if (operator == NULL)
+	if (proc == NULL)
 		cscm_error_report("cscm_apply", \
-				CSCM_ERROR_APPLY_NO_OPERATOR);
+				CSCM_ERROR_APPLY_NO_PROC);
 	else if (n_args >= 1 && args == NULL)
 		cscm_error_report("cscm_apply", \
 				CSCM_ERROR_NULL_PTR);
 
 
-	if (operator->type == CSCM_OBJECT_TYPE_PROC_PRIM) {
-		f = cscm_proc_prim_get_f(operator);
+	if (proc->type == CSCM_OBJECT_TYPE_PROC_PRIM) {
+		f = cscm_proc_prim_get_f(proc);
 
 		ret = f(n_args, args);
 
 
 		for (i = 0; i < n_args; i++)
 			cscm_gc_free(args[i]);
-	} else if (operator->type == CSCM_OBJECT_TYPE_PROC_COMP) {
-		body_ef = cscm_proc_comp_get_body(operator);
-		env = cscm_proc_comp_get_env(operator);
-		n_params = cscm_proc_comp_get_n_params(operator);
-		params = cscm_proc_comp_get_params(operator);
+	} else if (proc->type == CSCM_OBJECT_TYPE_PROC_COMP) {
+		body_ef = cscm_proc_comp_get_body(proc);
+		env = cscm_proc_comp_get_env(proc);
+		n_params = cscm_proc_comp_get_n_params(proc);
+		params = cscm_proc_comp_get_params(proc);
 
 
 		if (n_params != n_args)
@@ -225,7 +225,7 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *operator, \
 	}
 
 
-	cscm_gc_free(operator);
+	cscm_gc_free(proc);
 
 
 	return ret;
@@ -261,7 +261,7 @@ CSCM_COMBINATION_EF_STATE *_cscm_combination_ef_state_create()
 				"malloc");
 
 
-	state->operator_ef = NULL;
+	state->proc_ef = NULL;
 
 	state->n_arg_efs = 0;
 	state->arg_efs = NULL;
@@ -278,7 +278,7 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 	CSCM_COMBINATION_EF_STATE *s;
 	int flag_tco_allow;
 
-	CSCM_OBJECT *operator, **args;
+	CSCM_OBJECT *proc, **args;
 
 	CSCM_OBJECT *ret;
 
@@ -290,7 +290,7 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 	cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 
-	operator = cscm_ef_exec(s->operator_ef, env);
+	proc = cscm_ef_exec(s->proc_ef, env);
 
 
 	if (s->n_arg_efs == 0) {
@@ -298,7 +298,7 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 
 
-		ret = cscm_apply(operator, 0, NULL);
+		ret = cscm_apply(proc, 0, NULL);
 	} else {
 		args = cscm_object_ptrs_create(s->n_arg_efs);
 		for (i = 0; i < s->n_arg_efs; i++)
@@ -309,7 +309,7 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 
 
-		ret = cscm_apply(operator, s->n_arg_efs, args);
+		ret = cscm_apply(proc, s->n_arg_efs, args);
 	}
 
 
@@ -325,14 +325,14 @@ CSCM_EF *cscm_analyze_combination(CSCM_AST_NODE *exp)
 
 	CSCM_COMBINATION_EF_STATE *state;
 
-	CSCM_EF *operator_ef, **arg_efs;
+	CSCM_EF *proc_ef, **arg_efs;
 
 
 	state = _cscm_combination_ef_state_create();
 
 
-	operator_ef = cscm_analyze(cscm_ast_exp_index(exp, 0));
-	state->operator_ef = operator_ef;
+	proc_ef = cscm_analyze(cscm_ast_exp_index(exp, 0));
+	state->proc_ef = proc_ef;
 
 
 	if (exp->n_childs == 1) {	// no argument in the combination
@@ -377,7 +377,7 @@ void cscm_combination_ef_free(CSCM_EF *ef)
 	state = (CSCM_COMBINATION_EF_STATE *)ef->state;
 
 
-	cscm_ef_free_tree(state->operator_ef);
+	cscm_ef_free_tree(state->proc_ef);
 
 	for (i = 0; i < state->n_arg_efs; i++)
 		cscm_ef_free_tree(state->arg_efs[i]);

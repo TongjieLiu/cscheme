@@ -163,4 +163,9 @@ CSCM_OBJECT *cscm_builtin_proc_min(size_t n, CSCM_OBJECT **args);
 
 
 
+CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args);
+
+
+
+
 #endif

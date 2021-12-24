@@ -116,7 +116,7 @@ CSCM_EF *cscm_analyze_let(CSCM_AST_NODE *exp)
 	CSCM_AST_NODE *binding, *bindings;
 	CSCM_AST_NODE *param, *arg;
 
-	CSCM_AST_NODE *operator, *lambda, *params;
+	CSCM_AST_NODE *proc, *lambda, *params;
 	CSCM_AST_NODE *combination, *args;
 
 
@@ -144,20 +144,20 @@ CSCM_EF *cscm_analyze_let(CSCM_AST_NODE *exp)
 
 
 	/* constructing the new lambda expression */
-	operator = cscm_ast_exp_create("<transformation>", 0);
+	proc = cscm_ast_exp_create("<transformation>", 0);
 
 	lambda = cscm_ast_symbol_create("transformation", 0);
 	cscm_ast_symbol_set(lambda, "lambda");
 
-	cscm_ast_exp_append(operator, lambda);
-	cscm_ast_exp_append(operator, params);
+	cscm_ast_exp_append(proc, lambda);
+	cscm_ast_exp_append(proc, params);
 
 	for (i = 2; i < exp->n_childs; i++) // append body
-		cscm_ast_exp_append(operator, cscm_ast_exp_index(exp, i));
+		cscm_ast_exp_append(proc, cscm_ast_exp_index(exp, i));
 
 
 	/* constructing the new combination */
-	cscm_ast_exp_insert_first(args, operator);
+	cscm_ast_exp_insert_first(args, proc);
 	combination = args;
 
 

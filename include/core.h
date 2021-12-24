@@ -49,7 +49,7 @@ typedef struct _CSCM_SA_FUNCS CSCM_SA_FUNCS;
 
 
 struct _CSCM_COMBINATION_EF_STATE {
-	CSCM_EF *operator_ef;
+	CSCM_EF *proc_ef;
 
 	size_t n_arg_efs;
 	CSCM_EF **arg_efs;
@@ -64,7 +64,7 @@ typedef struct _CSCM_COMBINATION_EF_STATE CSCM_COMBINATION_EF_STATE;
 #define CSCM_ERROR_ANALYZE_UNKNOWN_EXP_TYPE	"unknown expression type"
 
 
-#define CSCM_ERROR_APPLY_NO_OPERATOR		"operator is not specified"
+#define CSCM_ERROR_APPLY_NO_PROC		"procedure is not specified"
 
 
 #define CSCM_ERROR_APPLY_N_ARGS			"incorrect number of arguments"
@@ -78,7 +78,7 @@ CSCM_EF *cscm_analyze(CSCM_AST_NODE *exp);
 
 
 
-CSCM_OBJECT *cscm_apply(CSCM_OBJECT *operator, \
+CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 		size_t n_args, CSCM_OBJECT **args);
 int cscm_is_combination(CSCM_AST_NODE *exp);
 CSCM_EF *cscm_analyze_combination(CSCM_AST_NODE *exp);

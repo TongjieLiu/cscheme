@@ -59,12 +59,15 @@ void cscm_proc_prim_set(CSCM_OBJECT *proc_obj, CSCM_PROC_PRIM_FUNC f)
 	CSCM_PROC_PRIM *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_prim_set", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_PRIM)
 		cscm_error_report("cscm_proc_prim_set", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_prim_set", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (f == NULL)
 		cscm_error_report("cscm_proc_prim_set", \
 				CSCM_ERROR_PROC_PRIM_BAD_FUNC);
@@ -84,12 +87,15 @@ CSCM_PROC_PRIM_FUNC cscm_proc_prim_get_f(CSCM_OBJECT *proc_obj)
 	CSCM_PROC_PRIM *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_prim_get_f", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_PRIM)
 		cscm_error_report("cscm_proc_prim_get_f", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_prim_get_f", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	proc = (CSCM_PROC_PRIM *)proc_obj->value;
@@ -138,12 +144,15 @@ void cscm_proc_comp_set(CSCM_OBJECT *proc_obj, \
 	CSCM_PROC_COMP *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_comp_set", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_proc_comp_set", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_set", \
+				CSCM_ERROR_EMPTY_OBJECT);
 	else if (params == NULL)
 		cscm_error_report("cscm_proc_comp_set", \
 				CSCM_ERROR_PROC_COMP_BAD_PARAMS);
@@ -178,12 +187,15 @@ size_t cscm_proc_comp_get_n_params(CSCM_OBJECT *proc_obj)
 	CSCM_PROC_COMP *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_comp_get_n_params", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_proc_comp_get_n_params", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_get_n_params", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	proc = (CSCM_PROC_COMP *)proc_obj->value;
@@ -198,12 +210,15 @@ char **cscm_proc_comp_get_params(CSCM_OBJECT *proc_obj)
 	CSCM_PROC_COMP *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_comp_get_params", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_proc_comp_get_params", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_get_params", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	proc = (CSCM_PROC_COMP *)proc_obj->value;
@@ -218,12 +233,15 @@ CSCM_EF *cscm_proc_comp_get_body(CSCM_OBJECT *proc_obj)
 	CSCM_PROC_COMP *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_comp_get_body", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_proc_comp_get_body", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_get_body", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	proc = (CSCM_PROC_COMP *)proc_obj->value;
@@ -238,12 +256,15 @@ CSCM_OBJECT *cscm_proc_comp_get_env(CSCM_OBJECT *proc_obj)
 	CSCM_PROC_COMP *proc;
 
 
-	if (proc_obj == NULL || proc_obj->value == NULL)
+	if (proc_obj == NULL)
 		cscm_error_report("cscm_proc_comp_get_env", \
 				CSCM_ERROR_NULL_PTR);
 	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_proc_comp_get_env", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_get_env", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	proc = (CSCM_PROC_COMP *)proc_obj->value;

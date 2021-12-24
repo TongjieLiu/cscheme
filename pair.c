@@ -67,10 +67,12 @@ void cscm_pair_set(CSCM_OBJECT *pair_obj, void *car, void *cdr)
 	CSCM_PAIR *pair;
 
 
-	if (pair_obj == NULL || pair_obj->value == NULL)
+	if (pair_obj == NULL)
 		cscm_error_report("cscm_pair_set", CSCM_ERROR_NULL_PTR);
 	else if (pair_obj->type != CSCM_OBJECT_TYPE_PAIR)
 		cscm_error_report("cscm_pair_set", CSCM_ERROR_OBJECT_TYPE);
+	else if (pair_obj->value == NULL)
+		cscm_error_report("cscm_pair_set", CSCM_ERROR_EMPTY_OBJECT);
 	else if (car == NULL || cdr == NULL)
 		cscm_error_report("cscm_pair_set", CSCM_ERROR_NULL_PTR);
 
@@ -88,10 +90,12 @@ void cscm_pair_set_car(CSCM_OBJECT *pair_obj, void *car)
 	CSCM_PAIR *pair;
 
 
-	if (pair_obj == NULL || pair_obj->value == NULL)
+	if (pair_obj == NULL)
 		cscm_error_report("cscm_pair_set_car", CSCM_ERROR_NULL_PTR);
 	else if (pair_obj->type != CSCM_OBJECT_TYPE_PAIR)
 		cscm_error_report("cscm_pair_set_car", CSCM_ERROR_OBJECT_TYPE);
+	else if (pair_obj->value == NULL)
+		cscm_error_report("cscm_pair_set_car", CSCM_ERROR_EMPTY_OBJECT);
 	else if (car == NULL)
 		cscm_error_report("cscm_pair_set_car", CSCM_ERROR_NULL_PTR);
 
@@ -115,10 +119,13 @@ void cscm_pair_set_cdr(CSCM_OBJECT *pair_obj, void *cdr)
 	CSCM_PAIR *pair;
 
 
-	if (pair_obj == NULL || pair_obj->value == NULL)
+	if (pair_obj == NULL)
 		cscm_error_report("cscm_pair_set_cdr", CSCM_ERROR_NULL_PTR);
 	else if (pair_obj->type != CSCM_OBJECT_TYPE_PAIR)
 		cscm_error_report("cscm_pair_set_cdr", CSCM_ERROR_OBJECT_TYPE);
+	else if (pair_obj->value == NULL)
+		cscm_error_report("cscm_pair_set_cdr", CSCM_ERROR_EMPTY_OBJECT);
+
 	else if (cdr == NULL)
 		cscm_error_report("cscm_pair_set_cdr", CSCM_ERROR_NULL_PTR);
 
@@ -144,10 +151,12 @@ void *cscm_pair_get_car(CSCM_OBJECT *pair_obj)
 	CSCM_PAIR *pair;
 
 
-	if (pair_obj == NULL || pair_obj->value == NULL)
+	if (pair_obj == NULL)
 		cscm_error_report("cscm_pair_get_car", CSCM_ERROR_NULL_PTR);
 	else if (pair_obj->type != CSCM_OBJECT_TYPE_PAIR)
 		cscm_error_report("cscm_pair_get_car", CSCM_ERROR_OBJECT_TYPE);
+	else if (pair_obj->value == NULL)
+		cscm_error_report("cscm_pair_get_car", CSCM_ERROR_EMPTY_OBJECT);
 
 
 	pair = (CSCM_PAIR *)pair_obj->value;
@@ -162,10 +171,12 @@ void *cscm_pair_get_cdr(CSCM_OBJECT *pair_obj)
 	CSCM_PAIR *pair;
 
 
-	if (pair_obj == NULL || pair_obj->value == NULL)
+	if (pair_obj == NULL)
 		cscm_error_report("cscm_pair_get_cdr", CSCM_ERROR_NULL_PTR);
 	else if (pair_obj->type != CSCM_OBJECT_TYPE_PAIR)
 		cscm_error_report("cscm_pair_get_cdr", CSCM_ERROR_OBJECT_TYPE);
+	else if (pair_obj->value == NULL)
+		cscm_error_report("cscm_pair_get_cdr", CSCM_ERROR_EMPTY_OBJECT);
 
 
 	pair = (CSCM_PAIR *)pair_obj->value;
@@ -567,7 +578,7 @@ CSCM_OBJECT **cscm_list_to_object_ptrs(CSCM_OBJECT *list)
 	objs = cscm_object_ptrs_create(n);
 
 
-	for (i = 0, pair = list; i < n; pair = cscm_pair_get_cdr(pair))
+	for (i = 0, pair = list; i < n; i++, pair = cscm_pair_get_cdr(pair))
 		objs[i] = cscm_pair_get_car(pair);
 
 

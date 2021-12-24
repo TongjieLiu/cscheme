@@ -134,6 +134,10 @@ void cscm_print_basic_docs()
 
 	puts("(max number1 [number2] [number3] ...) -> number");
 	puts("(min number1 [number2] [number3] ...) -> number");
+
+	puts("");
+
+	puts("(apply proc argument-list) -> object");
 }
 
 

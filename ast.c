@@ -590,10 +590,11 @@ char text_buf[CSCM_AST_BUF_TEXT_SIZE];
 
 
 // support symbolic list transformation: '(a b c) => (list 'a 'b 'c)
-size_t _do_cscm_ast_build(FILE *file,		\
-		CSCM_AST_NODE *exp,		\
-		size_t level,			\
-		int flag_sl,			\
+size_t _do_cscm_ast_build(FILE *file,	\
+		CSCM_AST_NODE *exp,	\
+		size_t level,		\
+		int flag_sl,		\
+		int flag_bl,		\
 		int flag_read_ahead) // true: whole file; false: first expression
 {
 	int i, end;
@@ -607,13 +608,14 @@ size_t _do_cscm_ast_build(FILE *file,		\
 	CSCM_AST_NODE *new_subexp, *new_symbol;
 
 	int flag_squote;
+	int flag_bquote;
 
 
 	line = exp->line;
-	flag_squote = 0;
+	flag_squote = flag_bquote = 0;
 
 
-	if (flag_sl) {	// inside scheme symbolic list
+	if (flag_sl || flag_bl) { // inside scheme symbolic list or backquoted list
 		new_symbol = cscm_ast_symbol_create(exp->filename, line);
 		cscm_ast_symbol_set(new_symbol, "list");
 
@@ -626,7 +628,7 @@ size_t _do_cscm_ast_build(FILE *file,		\
 
 
 		if (c == EOF) {
-			if (flag_squote)
+			if (flag_squote || flag_bquote)
 				cscm_syntax_error_report(		\
 						exp->filename,		\
 						line,			\
@@ -641,7 +643,7 @@ size_t _do_cscm_ast_build(FILE *file,		\
 			else
 				return line;
 		} else if (c == ' ' || c == '\t' || c == '\n') {
-			if (flag_squote)
+			if (flag_squote || flag_bquote)
 				cscm_syntax_error_report(		\
 						exp->filename,		\
 						line,			\
@@ -667,7 +669,7 @@ size_t _do_cscm_ast_build(FILE *file,		\
 				ungetc(c, file);
 			}
 		} else if (c == ';') { // scheme comment
-			if (flag_squote)
+			if (flag_squote || flag_bquote)
 				cscm_syntax_error_report(		\
 						exp->filename,		\
 						line,			\
@@ -691,26 +693,64 @@ size_t _do_cscm_ast_build(FILE *file,		\
 				line++;
 			}
 		} else if (c == '\'') {
-			// count single quotes(')
-			flag_squote++;
+			if (flag_bquote)
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_BQUOTE_SQUOTE);
+			else
+				flag_squote++; // count single quotes
+		} else if (c == '`') {
+			if (flag_squote)
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_SQUOTE_BQUOTE);
+			else if (flag_bquote || flag_bl)
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_DUP_BQUOTE);
+			else
+				flag_bquote = 1;
 		} else if (c == '(') {
 			new_subexp = cscm_ast_exp_create(exp->filename, \
 							line);
 
 
-			if (flag_squote) {
-				line = _do_cscm_ast_build(file,	\
+			if (flag_squote && !flag_bquote) {
+				line = _do_cscm_ast_build(file,		\
 							new_subexp,	\
 							level + 1,	\
 							1,		\
+							flag_bl,	\
 							flag_read_ahead);
 
 				flag_squote = 0;
-			} else {
-				line = _do_cscm_ast_build(file,	\
+			} else if (!flag_squote && flag_bquote) {
+				line = _do_cscm_ast_build(file,		\
 							new_subexp,	\
 							level + 1,	\
 							flag_sl,	\
+							1,		\
+							flag_read_ahead);
+
+				flag_bquote = 0;
+			} else if (flag_squote && flag_bquote) {
+				line = _do_cscm_ast_build(file,		\
+							new_subexp,	\
+							level + 1,	\
+							1,		\
+							1,		\
+							flag_read_ahead);
+
+				flag_squote = flag_bquote = 0;
+			} else {
+				line = _do_cscm_ast_build(file,		\
+							new_subexp,	\
+							level + 1,	\
+							flag_sl,	\
+							flag_bl,	\
 							flag_read_ahead);
 			}
 
@@ -728,7 +768,7 @@ size_t _do_cscm_ast_build(FILE *file,		\
 						line,			\
 						CSCM_ERROR_AST_CP);
 
-			if (flag_squote)
+			if (flag_squote || flag_bquote)
 				cscm_syntax_error_report(		\
 						exp->filename,		\
 						line,			\
@@ -737,7 +777,7 @@ size_t _do_cscm_ast_build(FILE *file,		\
 
 			return line;
 		} else if (c == '"') { // scheme string
-			if (flag_squote)
+			if (flag_squote || flag_bquote)
 				cscm_syntax_error_report(		\
 						exp->filename,		\
 						line,			\
@@ -801,16 +841,33 @@ size_t _do_cscm_ast_build(FILE *file,		\
 			if (flag_sl) {
 				end = 1 + flag_squote;
 
-
 				for (i = 0; i < end; i++) {
 					*next_char = '\'';
 
 					text_len++;
 					next_char++;
 				}
+			} else if (flag_bl) {
+				if (c == ',') {
+					c = fgetc(file);
+					if (c == EOF)
+						cscm_syntax_error_report( \
+							exp->filename,    \
+							line,             \
+							CSCM_ERROR_AST_EOF);
+				} else {
+					*next_char = '\'';
+
+					text_len++;
+					next_char++;
+				}
+			} else if (flag_bquote) {
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_BQUOTE);
 			} else {
 				end = flag_squote;
-
 
 				for (i = 0; i < end; i++) {
 					*next_char = '\'';
@@ -819,7 +876,6 @@ size_t _do_cscm_ast_build(FILE *file,		\
 					next_char++;
 				}
 			}
-
 
 			flag_squote = 0;
 
@@ -843,11 +899,27 @@ size_t _do_cscm_ast_build(FILE *file,		\
 							exp->filename,	\
 							line,		\
 							CSCM_ERROR_AST_DQUOTE);
-			} while (c != ' ' && c != '\t' && c != '\n' && \
-				c != ')' && c != EOF);
+			} while (c != ' ' && c != '\t' && c != '\n'	\
+				&& c != '(' && c != ')' && c != EOF	\
+				&& c != '\'' && c != '"');
 
 
-			if (c != EOF)
+			if (c == '(')
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_OP);
+			if (c == '\'')
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_SQUOTE);
+			if (c == '"')
+				cscm_syntax_error_report(	\
+						exp->filename,	\
+						line,		\
+						CSCM_ERROR_AST_DQUOTE);
+			else if (c != EOF)
 				ungetc(c, file);
 
 
@@ -889,7 +961,7 @@ CSCM_AST_NODE *cscm_ast_build(FILE *script, char *filename)
 
 
 	exp = cscm_ast_exp_create(filename, 1);
-	_do_cscm_ast_build(script, exp, 0, 0, 1);
+	_do_cscm_ast_build(script, exp, 0, 0, 0, 1);
 
 
 	// wrap a begin expression outside the entire script
@@ -910,7 +982,7 @@ CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename)
 
 
 	exp = cscm_ast_exp_create(filename, 1);
-	_do_cscm_ast_build(file, exp, 0, 1, 0);
+	_do_cscm_ast_build(file, exp, 0, 1, 0, 0);
 
 
 	if (exp->n_childs != 1)

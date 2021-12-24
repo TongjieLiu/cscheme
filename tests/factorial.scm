@@ -23,4 +23,14 @@
 
 
 
-(printn "fac(20) =" (fac 20))
+(printn "fac(0) =" (fac 0))
+(printn "fac(1) =" (fac 1))
+(printn "fac(2) =" (fac 2))
+(printn "fac(3) =" (fac 3))
+(printn "fac(4) =" (fac 4))
+(printn "fac(5) =" (fac 5))
+(printn "fac(6) =" (fac 6))
+(printn "fac(7) =" (fac 7))
+(printn "fac(8) =" (fac 8))
+(printn "fac(9) =" (fac 9))
+(printn "fac(10) =" (fac 10))

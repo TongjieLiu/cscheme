@@ -27,4 +27,14 @@
 
 
 
-(printn "fib(50) =" (fib 50))
+(printn "fib(0) =" (fib 0))
+(printn "fib(1) =" (fib 1))
+(printn "fib(2) =" (fib 2))
+(printn "fib(3) =" (fib 3))
+(printn "fib(4) =" (fib 4))
+(printn "fib(5) =" (fib 5))
+(printn "fib(6) =" (fib 6))
+(printn "fib(7) =" (fib 7))
+(printn "fib(8) =" (fib 8))
+(printn "fib(9) =" (fib 9))
+(printn "fib(10) =" (fib 10))

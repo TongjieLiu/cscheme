@@ -41,17 +41,10 @@ typedef struct _CSCM_AO_EF_STATE CSCM_AO_EF_STATE;
 
 
 
-#define CSCM_ERROR_NOT_N_CLAUSES	\
-	"incorrect number of clauses in not expression"
-
 #define CSCM_ERROR_AO_INCOMPLETE	\
 	"incomplete and/or expression in and/or expression"
 
 
-
-
-int cscm_is_not(CSCM_AST_NODE *exp);
-CSCM_EF *cscm_analyze_not(CSCM_AST_NODE *exp);
 
 
 int cscm_is_ao(CSCM_AST_NODE *exp);
@@ -60,7 +53,6 @@ CSCM_EF *cscm_analyze_ao(CSCM_AST_NODE *exp);
 
 
 
-void cscm_not_ef_free(CSCM_EF *ef);
 void cscm_ao_ef_free(CSCM_EF *ef);
 
 

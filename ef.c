@@ -151,7 +151,6 @@ CSCM_EF_FREE_FUNC _cscm_ef_free_func_list[] = {
 	cscm_if_ef_free,
 	cscm_seq_ef_free,
 	cscm_ao_ef_free,
-	cscm_not_ef_free,
 	cscm_combination_ef_free
 };
 

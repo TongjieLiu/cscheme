@@ -103,7 +103,6 @@ CSCM_SA_FUNCS _cscm_sa_func_list[] = {
 	{0, cscm_is_begin, cscm_analyze_begin},
 	{0, cscm_is_let, cscm_analyze_let},
 	{0, cscm_is_ao, cscm_analyze_ao}, // and/or
-	{0, cscm_is_not, cscm_analyze_not},
 	{0, cscm_is_combination, cscm_analyze_combination},
 
 

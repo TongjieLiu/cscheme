@@ -85,6 +85,18 @@ void cscm_print_basic_docs()
 	puts("(cons new-car new-cdr) -> sequence");
 	puts("(car pair) -> object");
 	puts("(cdr pair) -> object");
+	puts("(cadr pair) -> object");
+	puts("(cdar pair) -> object");
+	puts("(cddr pair) -> object");
+	puts("(caar pair) -> object");
+	puts("(caaar pair) -> object");
+	puts("(cdaar pair) -> object");
+	puts("(cadar pair) -> object");
+	puts("(caadr pair) -> object");
+	puts("(cddar pair) -> object");
+	puts("(caddr pair) -> object");
+	puts("(cdadr pair) -> object");
+	puts("(cdddr pair) -> object");
 
 	puts("");
 
@@ -103,29 +115,29 @@ void cscm_print_basic_docs()
 
 	puts("");
 
-	puts("(= number1 number2) -> true/false");
-	puts("(eq? symbol1 symbol2) -> true/false");
-	puts("(eq? string1 string2) -> true/false");
-	puts("(eq? bool1 bool2) -> true/false");
-	puts("(equal? number1 number2) -> true/false");
-	puts("(equal? symbol1 symbol2) -> true/false");
-	puts("(equal? string1 string2) -> true/false");
-	puts("(equal? bool1 bool2) -> true/false");
+	puts("(= number1 number2) -> #t/#f");
+	puts("(eq? symbol1 symbol2) -> #t/#f");
+	puts("(eq? string1 string2) -> #t/#f");
+	puts("(eq? bool1 bool2) -> #t/#f");
+	puts("(equal? number1 number2) -> #t/#f");
+	puts("(equal? symbol1 symbol2) -> #t/#f");
+	puts("(equal? string1 string2) -> #t/#f");
+	puts("(equal? bool1 bool2) -> #t/#f");
 
 	puts("");
 
-	puts("(> number1 number2) -> true/false");
-	puts("(>= number1 number2) true/false");
-	puts("(< number1 number2) -> true/false");
-	puts("(<= number1 number2) -> true/false");
+	puts("(> number1 number2) -> #t/#f");
+	puts("(>= number1 number2) #t/#f");
+	puts("(< number1 number2) -> #t/#f");
+	puts("(<= number1 number2) -> #t/#f");
 
 	puts("");
 
-	puts("(string? object) -> true/false");
-	puts("(symbol? object) -> true/false");
-	puts("(number? object) -> true/false");
-	puts("(pair? object) -> true/false");
-	puts("(null? object) -> true/false");
+	puts("(string? object) -> #t/#f");
+	puts("(symbol? object) -> #t/#f");
+	puts("(number? object) -> #t/#f");
+	puts("(pair? object) -> #t/#f");
+	puts("(null? object) -> #t/#f");
 
 	puts("");
 
@@ -140,6 +152,7 @@ void cscm_print_basic_docs()
 	puts("");
 
 	puts("(apply proc argument-list) -> object");
+	puts("(not object) -> #t/#f");
 }
 
 

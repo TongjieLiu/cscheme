@@ -28,37 +28,6 @@
 
 
 
-int cscm_is_not(CSCM_AST_NODE *exp)
-{
-	CSCM_AST_NODE *head;
-
-
-	if (exp == NULL)
-		cscm_error_report("cscm_is_not", \
-				CSCM_ERROR_NULL_PTR);
-	else if (!cscm_ast_is_exp(exp))
-		return 0;
-	else if (cscm_ast_is_exp_empty(exp))
-		return 0;
-
-
-	head = cscm_ast_exp_index(exp, 0);
-	if (!cscm_ast_is_symbol(head))
-		return 0;
-	else if (!cscm_ast_symbol_text_equal(head, "not"))
-		return 0;
-
-
-	if (exp->n_childs != 2) // only support 1 clause
-		cscm_syntax_error_report(exp->filename,		\
-				exp->line,			\
-				CSCM_ERROR_NOT_N_CLAUSES);
-
-
-	return 1;
-}
-
-
 int cscm_is_ao(CSCM_AST_NODE *exp)
 {
 	CSCM_AST_NODE *head;
@@ -88,43 +57,6 @@ int cscm_is_ao(CSCM_AST_NODE *exp)
 
 
 	return 1;
-}
-
-
-
-
-CSCM_OBJECT *_cscm_not_ef(void *state, CSCM_OBJECT *env)
-{
-	CSCM_EF *ef;
-	CSCM_OBJECT *result;
-
-	CSCM_OBJECT *ret;
-
-
-	ef = (CSCM_EF *)state;
-	result = cscm_ef_exec(ef, env);
-
-	if (result == CSCM_FALSE)
-		ret = CSCM_TRUE;
-	else
-		ret = CSCM_FALSE;
-
-
-	return ret;
-}
-
-
-CSCM_EF *cscm_analyze_not(CSCM_AST_NODE *exp)
-{
-	CSCM_EF *ef;
-
-
-	ef = cscm_analyze(cscm_ast_exp_index(exp, 1));
-
-
-	return cscm_ef_construct(CSCM_EF_TYPE_NOT,	\
-				ef,			\
-				_cscm_not_ef);
 }
 
 
@@ -238,28 +170,6 @@ CSCM_EF *cscm_analyze_ao(CSCM_AST_NODE *exp)
 }
 
 
-
-
-void cscm_not_ef_free(CSCM_EF *ef)
-{
-	CSCM_EF *clause_ef;
-
-
-	if (ef == NULL)
-		cscm_error_report("cscm_not_ef_free", \
-				CSCM_ERROR_NULL_PTR);
-	else if (ef->type != CSCM_EF_TYPE_NOT)
-		cscm_error_report("cscm_not_ef_free", \
-				CSCM_ERROR_EF_TYPE);
-
-
-	clause_ef = (CSCM_EF *)ef->state;
-
-	cscm_ef_free_tree(clause_ef);
-
-
-	free(ef);
-}
 
 
 void cscm_ao_ef_free(CSCM_EF *ef)

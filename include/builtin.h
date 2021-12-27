@@ -106,6 +106,18 @@ CSCM_OBJECT *cscm_builtin_proc_set_cdr(size_t n, CSCM_OBJECT **args);
 CSCM_OBJECT *cscm_builtin_proc_cons(size_t n, CSCM_OBJECT **args);
 CSCM_OBJECT *cscm_builtin_proc_car(size_t n, CSCM_OBJECT **args);
 CSCM_OBJECT *cscm_builtin_proc_cdr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cadr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cdar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cddr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_caar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_caaar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cdaar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cadar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_caadr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cddar(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_caddr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cdadr(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_cdddr(size_t n, CSCM_OBJECT **args);
 
 
 
@@ -164,6 +176,7 @@ CSCM_OBJECT *cscm_builtin_proc_min(size_t n, CSCM_OBJECT **args);
 
 
 CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_not(size_t n, CSCM_OBJECT **args);
 
 
 

@@ -515,7 +515,8 @@ char *_cscm_env_builtin_names[] = {
 	/* primitive procedures */
 	"print", "printn", "display", "newline", "read",
 	"set-car!", "set-cdr!",
-	"cons", "car", "cdr",
+	"cons", "car", "cdr", "cadr", "cdar", "cddr", "caar",
+	"caaar", "cdaar", "cadar", "caadr", "cddar", "caddr", "cdadr", "cdddr",
 	"list",
 	"+", "-", "*", "/",
 	"remainder",
@@ -524,7 +525,7 @@ char *_cscm_env_builtin_names[] = {
 	"string?", "symbol?", "number?", "pair?", "null?",
 	"include",
 	"max", "min",
-	"apply",
+	"apply", "not",
 
 	NULL
 };
@@ -556,6 +557,18 @@ CSCM_PROC_PRIM_FUNC _cscm_env_builtin_pp_funcs[] = {
 	cscm_builtin_proc_cons,
 	cscm_builtin_proc_car,
 	cscm_builtin_proc_cdr,
+	cscm_builtin_proc_cadr,
+	cscm_builtin_proc_cdar,
+	cscm_builtin_proc_cddr,
+	cscm_builtin_proc_caar,
+	cscm_builtin_proc_caaar,
+	cscm_builtin_proc_cdaar,
+	cscm_builtin_proc_cadar,
+	cscm_builtin_proc_caadr,
+	cscm_builtin_proc_cddar,
+	cscm_builtin_proc_caddr,
+	cscm_builtin_proc_cdadr,
+	cscm_builtin_proc_cdddr,
 
 	cscm_builtin_proc_list,
 
@@ -587,6 +600,7 @@ CSCM_PROC_PRIM_FUNC _cscm_env_builtin_pp_funcs[] = {
 	cscm_builtin_proc_min,
 
 	cscm_builtin_proc_apply,
+	cscm_builtin_proc_not,
 
 	NULL
 };

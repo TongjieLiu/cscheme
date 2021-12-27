@@ -356,6 +356,242 @@ CSCM_OBJECT *cscm_builtin_proc_cdr(size_t n, CSCM_OBJECT **args)
 }
 
 
+CSCM_OBJECT *cscm_builtin_proc_cadr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cadr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cdar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cdar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cddr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cddr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_caar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_caar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_caaar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_caaar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cdaar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cdaar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cadar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cadar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_caadr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_caadr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cddar(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cddar",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_car(pair);
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_caddr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_caddr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_car(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cdadr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cdadr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	pair = cscm_pair_get_car(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
+CSCM_OBJECT *cscm_builtin_proc_cdddr(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *pair;
+
+
+	cscm_builtin_check_args("cscm_builtin_proc_cdddr",	\
+				1,				\
+				n,				\
+				args);
+
+
+	pair = args[0];
+
+
+	pair = cscm_pair_get_cdr(pair);
+	pair = cscm_pair_get_cdr(pair);
+	return cscm_pair_get_cdr(pair);
+}
+
+
 
 
 CSCM_OBJECT *cscm_builtin_proc_list(size_t n, CSCM_OBJECT **args)
@@ -1332,4 +1568,33 @@ CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args)
 
 
 	return ret;
+}
+
+
+
+
+CSCM_OBJECT *cscm_builtin_proc_not(size_t n, CSCM_OBJECT **args)
+{
+	CSCM_OBJECT *obj;
+	cscm_builtin_check_args("cscm_builtin_proc_not",	\
+				1,				\
+				n,				\
+				args);
+
+
+	obj = args[0];
+
+
+	if (obj == CSCM_FALSE)
+		return CSCM_TRUE;
+	else if (obj->type == CSCM_OBJECT_TYPE_BOOL_FALSE)
+		cscm_error_report("cscm_builtin_proc_not", \
+				CSCM_ERROR_BOOL_EXTRA_COPY);
+	else if (obj == CSCM_TRUE)
+		return CSCM_FALSE;
+	else if (obj->type == CSCM_OBJECT_TYPE_BOOL_TRUE)
+		cscm_error_report("cscm_builtin_proc_not", \
+				CSCM_ERROR_BOOL_EXTRA_COPY);
+	else
+		return CSCM_FALSE;
 }

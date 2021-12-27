@@ -180,9 +180,14 @@ void cscm_if_ef_free(CSCM_EF *ef)
 
 	state = (CSCM_IF_EF_STATE *)ef->state;
 
+
 	cscm_ef_free_tree(state->predicate_ef);
+
 	cscm_ef_free_tree(state->consequent_ef);
-	cscm_ef_free_tree(state->alternative_ef);
+
+	if (state->alternative_ef)
+		cscm_ef_free_tree(state->alternative_ef);
+
 
 	free(state);
 

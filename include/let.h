@@ -28,12 +28,12 @@
 
 
 
-#define CSCM_ERROR_LET_NO_BINDING	"no binding"
-#define CSCM_ERROR_LET_BAD_BINDINGS	"bad bindings"
-#define CSCM_ERROR_LET_BAD_BINDING	"bad binding"
+#define CSCM_ERROR_LET_NO_BINDING	"no binding in let expression"
+#define CSCM_ERROR_LET_BAD_BINDINGS	"bad bindings in let expression"
+#define CSCM_ERROR_LET_BAD_BINDING	"bad binding in let expression"
 
 
-#define CSCM_ERROR_LET_EMPTY_BODY	"empty body"
+#define CSCM_ERROR_LET_EMPTY_BODY	"empty body in let expression"
 
 
 

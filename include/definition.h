@@ -39,14 +39,21 @@ typedef struct _CSCM_DEFINITION_EF_STATE CSCM_DEFINITION_EF_STATE;
 
 
 
-#define CSCM_ERROR_DEFINITION_NO_VAR		"variable is not specified"
-#define CSCM_ERROR_DEFINITION_BAD_VAR		"bad variable"
+#define CSCM_ERROR_DEFINITION_NO_VAR		"definition variable is not specified"
+#define CSCM_ERROR_DEFINITION_BAD_VAR		"bad definition variable"
 
-#define CSCM_ERROR_DEFINITION_NO_VAL		"value is not specified"
-#define CSCM_ERROR_DEFINITION_BAD_VAL		"bad value"
 
-#define CSCM_ERROR_DEFINITION_NO_PROC		"procedure name is not specified"
-#define CSCM_ERROR_DEFINITION_EMPTY_BODY	"empty body"
+#define CSCM_ERROR_DEFINITION_NO_VAL		"definition value is not specified"
+#define CSCM_ERROR_DEFINITION_BAD_VAL		"bad definition value"
+
+
+
+
+#define CSCM_ERROR_DEFINITION_NO_PROC		\
+	"procedure name is not specified in definition expression"
+
+#define CSCM_ERROR_DEFINITION_EMPTY_BODY	\
+	"empty body in definition expression"
 
 
 

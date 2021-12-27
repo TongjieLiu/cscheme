@@ -28,9 +28,9 @@
 
 
 
-#define CSCM_ERROR_COND_NO_CLAUSE	"no clasue"
-#define CSCM_ERROR_COND_BAD_CLAUSE	"bad clause"
-#define CSCM_ERROR_COND_BAD_ELSE	"bad else clause"
+#define CSCM_ERROR_COND_NO_CLAUSE	"no clasue in cond expression"
+#define CSCM_ERROR_COND_BAD_CLAUSE	"bad cond clause"
+#define CSCM_ERROR_COND_BAD_ELSE	"bad else clause in cond expression"
 
 
 

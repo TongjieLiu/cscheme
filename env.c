@@ -567,7 +567,7 @@ CSCM_PROC_PRIM_FUNC _cscm_env_builtin_pp_funcs[] = {
 	cscm_builtin_proc_remainder,
 
 	cscm_builtin_proc_equal_num,
-	cscm_builtin_proc_equal_ss,
+	cscm_builtin_proc_equal_ssb,
 	cscm_builtin_proc_equal,
 
 	cscm_builtin_proc_greater_than,

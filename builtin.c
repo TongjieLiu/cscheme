@@ -835,14 +835,14 @@ CSCM_OBJECT *cscm_builtin_proc_equal_num(size_t n, CSCM_OBJECT **args)
 }
 
 
-/* test for equality of symbols and strings */
-CSCM_OBJECT *cscm_builtin_proc_equal_ss(size_t n, CSCM_OBJECT **args)
+/* test for equality of symbols, strings and bools */
+CSCM_OBJECT *cscm_builtin_proc_equal_ssb(size_t n, CSCM_OBJECT **args)
 {
 	char *text_x, *text_y;
 	CSCM_OBJECT *x, *y;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_equal_ss",	\
+	cscm_builtin_check_args("cscm_builtin_proc_equal_ssb",	\
 				2,				\
 				n,				\
 				args);
@@ -852,12 +852,31 @@ CSCM_OBJECT *cscm_builtin_proc_equal_ss(size_t n, CSCM_OBJECT **args)
 	y = args[1];
 
 
+	if ((x->type == CSCM_OBJECT_TYPE_BOOL_TRUE		\
+		|| x->type == CSCM_OBJECT_TYPE_BOOL_FALSE)	\
+		&& (y->type == CSCM_OBJECT_TYPE_BOOL_TRUE	\
+		|| y->type == CSCM_OBJECT_TYPE_BOOL_FALSE)) {
+		if (x != CSCM_TRUE && x != CSCM_FALSE)
+			cscm_error_report("cscm_builtin_proc_equal_ssb", \
+					CSCM_ERROR_BOOL_EXTRA_COPY);
+		else if (y != CSCM_TRUE && y != CSCM_FALSE)
+			cscm_error_report("cscm_builtin_proc_equal_ssb", \
+					CSCM_ERROR_BOOL_EXTRA_COPY);
+
+
+		if (x == y)
+			return CSCM_TRUE;
+		else
+			return CSCM_FALSE;
+	}
+
+
 	if (x->type == CSCM_OBJECT_TYPE_SYMBOL)
 		text_x = cscm_symbol_get(x);
 	else if (x->type == CSCM_OBJECT_TYPE_STRING)
 		text_x = cscm_string_get(x);
 	else
-		cscm_error_report("cscm_builtin_proc_equal_ss", \
+		cscm_error_report("cscm_builtin_proc_equal_ssb", \
 				CSCM_ERROR_OBJECT_TYPE);
 
 
@@ -866,7 +885,7 @@ CSCM_OBJECT *cscm_builtin_proc_equal_ss(size_t n, CSCM_OBJECT **args)
 	else if (y->type == CSCM_OBJECT_TYPE_STRING)
 		text_y = cscm_string_get(y);
 	else
-		cscm_error_report("cscm_builtin_proc_equal_ss", \
+		cscm_error_report("cscm_builtin_proc_equal_ssb", \
 				CSCM_ERROR_OBJECT_TYPE);
 
 
@@ -895,18 +914,24 @@ CSCM_OBJECT *cscm_builtin_proc_equal(size_t n, CSCM_OBJECT **args)
 	y = args[1];
 
 
-	if ((x->type == CSCM_OBJECT_TYPE_NUM_LONG		\
-		|| x->type == CSCM_OBJECT_TYPE_NUM_DOUBLE)	\
-		&&						\
-		(y->type == CSCM_OBJECT_TYPE_NUM_LONG		\
+	if ((x->type == CSCM_OBJECT_TYPE_NUM_LONG			\
+		|| x->type == CSCM_OBJECT_TYPE_NUM_DOUBLE)		\
+		&&							\
+		(y->type == CSCM_OBJECT_TYPE_NUM_LONG			\
 	 	|| y->type == CSCM_OBJECT_TYPE_NUM_DOUBLE))
 		return cscm_builtin_proc_equal_num(n, args);		
-	else if ((x->type == CSCM_OBJECT_TYPE_SYMBOL		\
-		&& y->type == CSCM_OBJECT_TYPE_SYMBOL)		\
-		||						\
-		(x->type == CSCM_OBJECT_TYPE_STRING		\
-	 	&& y->type == CSCM_OBJECT_TYPE_STRING))
-		return cscm_builtin_proc_equal_ss(n, args);		
+	else if ((x->type == CSCM_OBJECT_TYPE_SYMBOL			\
+		&& y->type == CSCM_OBJECT_TYPE_SYMBOL)			\
+		||							\
+		(x->type == CSCM_OBJECT_TYPE_STRING			\
+	 	&& y->type == CSCM_OBJECT_TYPE_STRING)			\
+		||							\
+		((x->type == CSCM_OBJECT_TYPE_BOOL_TRUE			\
+			|| x->type == CSCM_OBJECT_TYPE_BOOL_FALSE)	\
+		&& (y->type == CSCM_OBJECT_TYPE_BOOL_TRUE		\
+			|| y->type == CSCM_OBJECT_TYPE_BOOL_FALSE)))
+
+		return cscm_builtin_proc_equal_ssb(n, args);		
 	else
 		cscm_error_report("cscm_builtin_proc_equal", \
 				CSCM_ERROR_OBJECT_TYPE);

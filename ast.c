@@ -246,8 +246,8 @@ void cscm_ast_symbol_set(CSCM_AST_NODE *symbol, char *text)
 
 
 /*	Since we'll free the memory of old text, we should not call
- * this function with string literals and substring of the old text
- * as the new text to be set. */
+ * this function with string literals and any substrings of the old
+ * text as the new text to be set. */
 void cscm_ast_symbol_set_simple(CSCM_AST_NODE *symbol, char *text)
 {
 	if (symbol == NULL)
@@ -584,6 +584,10 @@ void cscm_ast_free_tree(CSCM_AST_NODE *node)
 
 
 
+#define CSCM_AST_READ_AHEAD		1
+#define CSCM_AST_NOT_READ_AHEAD		0
+
+
 /* the terminating NULL byte of string is added */
 #define CSCM_AST_BUF_TEXT_SIZE	(CSCM_AST_TEXT_MAX_LEN + 1)
 char text_buf[CSCM_AST_BUF_TEXT_SIZE];
@@ -593,8 +597,6 @@ char text_buf[CSCM_AST_BUF_TEXT_SIZE];
 size_t _do_cscm_ast_build(FILE *file,	\
 		CSCM_AST_NODE *exp,	\
 		size_t level,		\
-		int flag_sl,		\
-		int flag_bl,		\
 		int flag_read_ahead) // true: whole file; false: first expression
 {
 	int i, end;
@@ -607,34 +609,13 @@ size_t _do_cscm_ast_build(FILE *file,	\
 
 	CSCM_AST_NODE *new_subexp, *new_symbol;
 
-	int flag_squote;
-	int flag_bquote;
-
 
 	line = exp->line;
-	flag_squote = flag_bquote = 0;
-
-
-	if (flag_sl || flag_bl) { // inside scheme symbolic list or backquoted list
-		new_symbol = cscm_ast_symbol_create(exp->filename, line);
-		cscm_ast_symbol_set(new_symbol, "list");
-
-		cscm_ast_exp_append(exp, new_symbol);
-	}
-
-
 	while (1) {
 		c = fgetc(file);
 
 
 		if (c == EOF) {
-			if (flag_squote || flag_bquote)
-				cscm_syntax_error_report(		\
-						exp->filename,		\
-						line,			\
-						CSCM_ERROR_AST_ESS);
-
-
 			if (level != 0)
 				cscm_syntax_error_report(	\
 						exp->filename,	\
@@ -643,13 +624,6 @@ size_t _do_cscm_ast_build(FILE *file,	\
 			else
 				return line;
 		} else if (c == ' ' || c == '\t' || c == '\n') {
-			if (flag_squote || flag_bquote)
-				cscm_syntax_error_report(		\
-						exp->filename,		\
-						line,			\
-						CSCM_ERROR_AST_ESS);
-
-
 			do {
 				if (c == '\n')
 					line++;
@@ -669,13 +643,6 @@ size_t _do_cscm_ast_build(FILE *file,	\
 				ungetc(c, file);
 			}
 		} else if (c == ';') { // scheme comment
-			if (flag_squote || flag_bquote)
-				cscm_syntax_error_report(		\
-						exp->filename,		\
-						line,			\
-						CSCM_ERROR_AST_ESS);
-
-
 			do {
 				c = fgetc(file);
 			} while (c != '\n' && c != EOF);
@@ -693,66 +660,86 @@ size_t _do_cscm_ast_build(FILE *file,	\
 				line++;
 			}
 		} else if (c == '\'') {
-			if (flag_bquote)
-				cscm_syntax_error_report(	\
-						exp->filename,	\
-						line,		\
-						CSCM_ERROR_AST_BQUOTE_SQUOTE);
-			else
-				flag_squote++; // count single quotes
+			new_symbol = cscm_ast_symbol_create(		\
+							exp->filename,	\
+							line);
+			cscm_ast_symbol_set(new_symbol, "quote");
+
+			new_subexp = cscm_ast_exp_create(		\
+							exp->filename,	\
+							line);
+
+
+			cscm_ast_exp_append(new_subexp, new_symbol);
+			line = _do_cscm_ast_build(file,			\
+						new_subexp,		\
+						0,			\
+						CSCM_AST_NOT_READ_AHEAD);
+
+
+			cscm_ast_exp_append(exp, new_subexp);
+
+
+			/* parsing of the first list is complete */
+			if (!flag_read_ahead && level == 0)
+				return line;
 		} else if (c == '`') {
-			if (flag_squote)
-				cscm_syntax_error_report(	\
-						exp->filename,	\
-						line,		\
-						CSCM_ERROR_AST_SQUOTE_BQUOTE);
-			else if (flag_bquote || flag_bl)
-				cscm_syntax_error_report(	\
-						exp->filename,	\
-						line,		\
-						CSCM_ERROR_AST_DUP_BQUOTE);
-			else
-				flag_bquote = 1;
+			new_symbol = cscm_ast_symbol_create(		\
+							exp->filename,	\
+							line);
+			cscm_ast_symbol_set(new_symbol, "quasiquote");
+
+			new_subexp = cscm_ast_exp_create(		\
+							exp->filename,	\
+							line);
+
+
+			cscm_ast_exp_append(new_subexp, new_symbol);
+			line = _do_cscm_ast_build(file,			\
+						new_subexp,		\
+						0,			\
+						CSCM_AST_NOT_READ_AHEAD);
+
+
+			cscm_ast_exp_append(exp, new_subexp);
+
+
+			/* parsing of the first list is complete */
+			if (!flag_read_ahead && level == 0)
+				return line;
+		} else if (c == ',') {
+			new_symbol = cscm_ast_symbol_create(		\
+							exp->filename,	\
+							line);
+			cscm_ast_symbol_set(new_symbol, "unquote");
+
+			new_subexp = cscm_ast_exp_create(		\
+							exp->filename,	\
+							line);
+
+
+			cscm_ast_exp_append(new_subexp, new_symbol);
+			line = _do_cscm_ast_build(file,			\
+						new_subexp,		\
+						0,			\
+						CSCM_AST_NOT_READ_AHEAD);
+
+
+			cscm_ast_exp_append(exp, new_subexp);
+
+
+			/* parsing of the first list is complete */
+			if (!flag_read_ahead && level == 0)
+				return line;
 		} else if (c == '(') {
 			new_subexp = cscm_ast_exp_create(exp->filename, \
 							line);
 
 
-			if (flag_squote && !flag_bquote) {
-				line = _do_cscm_ast_build(file,		\
-							new_subexp,	\
-							level + 1,	\
-							1,		\
-							flag_bl,	\
-							flag_read_ahead);
-
-				flag_squote = 0;
-			} else if (!flag_squote && flag_bquote) {
-				line = _do_cscm_ast_build(file,		\
-							new_subexp,	\
-							level + 1,	\
-							flag_sl,	\
-							1,		\
-							flag_read_ahead);
-
-				flag_bquote = 0;
-			} else if (flag_squote && flag_bquote) {
-				line = _do_cscm_ast_build(file,		\
-							new_subexp,	\
-							level + 1,	\
-							1,		\
-							1,		\
-							flag_read_ahead);
-
-				flag_squote = flag_bquote = 0;
-			} else {
-				line = _do_cscm_ast_build(file,		\
-							new_subexp,	\
-							level + 1,	\
-							flag_sl,	\
-							flag_bl,	\
-							flag_read_ahead);
-			}
+			line = _do_cscm_ast_build(file,		\
+						new_subexp,	\
+						level + 1,	\
+						flag_read_ahead);
 
 			cscm_ast_exp_append(exp, new_subexp);
 
@@ -768,22 +755,9 @@ size_t _do_cscm_ast_build(FILE *file,	\
 						line,			\
 						CSCM_ERROR_AST_CP);
 
-			if (flag_squote || flag_bquote)
-				cscm_syntax_error_report(		\
-						exp->filename,		\
-						line,			\
-						CSCM_ERROR_AST_ESS);
-
 
 			return line;
 		} else if (c == '"') { // scheme string
-			if (flag_squote || flag_bquote)
-				cscm_syntax_error_report(		\
-						exp->filename,		\
-						line,			\
-						CSCM_ERROR_AST_ESS);
-
-
 			*text_buf = '"';
 
 			next_char = text_buf + 1;
@@ -838,48 +812,6 @@ size_t _do_cscm_ast_build(FILE *file,	\
 			next_char = text_buf;
 
 
-			if (flag_sl) {
-				end = 1 + flag_squote;
-
-				for (i = 0; i < end; i++) {
-					*next_char = '\'';
-
-					text_len++;
-					next_char++;
-				}
-			} else if (flag_bl) {
-				if (c == ',') {
-					c = fgetc(file);
-					if (c == EOF)
-						cscm_syntax_error_report( \
-							exp->filename,    \
-							line,             \
-							CSCM_ERROR_AST_EOF);
-				} else {
-					*next_char = '\'';
-
-					text_len++;
-					next_char++;
-				}
-			} else if (flag_bquote) {
-				cscm_syntax_error_report(	\
-						exp->filename,	\
-						line,		\
-						CSCM_ERROR_AST_BQUOTE);
-			} else {
-				end = flag_squote;
-
-				for (i = 0; i < end; i++) {
-					*next_char = '\'';
-
-					text_len++;
-					next_char++;
-				}
-			}
-
-			flag_squote = 0;
-
-
 			do {
 				*next_char = c;
 
@@ -909,12 +841,12 @@ size_t _do_cscm_ast_build(FILE *file,	\
 						exp->filename,	\
 						line,		\
 						CSCM_ERROR_AST_OP);
-			if (c == '\'')
+			else if (c == '\'')
 				cscm_syntax_error_report(	\
 						exp->filename,	\
 						line,		\
 						CSCM_ERROR_AST_SQUOTE);
-			if (c == '"')
+			else if (c == '"')
 				cscm_syntax_error_report(	\
 						exp->filename,	\
 						line,		\
@@ -961,7 +893,7 @@ CSCM_AST_NODE *cscm_ast_build(FILE *script, char *filename)
 
 
 	exp = cscm_ast_exp_create(filename, 1);
-	_do_cscm_ast_build(script, exp, 0, 0, 0, 1);
+	_do_cscm_ast_build(script, exp, 0, CSCM_AST_READ_AHEAD);
 
 
 	// wrap a begin expression outside the entire script
@@ -982,7 +914,7 @@ CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename)
 
 
 	exp = cscm_ast_exp_create(filename, 1);
-	_do_cscm_ast_build(file, exp, 0, 1, 0, 0);
+	_do_cscm_ast_build(file, exp, 0, CSCM_AST_NOT_READ_AHEAD);
 
 
 	if (exp->n_childs != 1)

@@ -35,6 +35,7 @@
 #include "logical.h"
 #include "proc.h"
 #include "quote.h"
+#include "quasiquote.h"
 #include "gc.h"
 #include "env.h"
 #include "tco.h"
@@ -89,11 +90,11 @@ CSCM_OBJECT *cscm_eval(CSCM_AST_NODE *exp, CSCM_OBJECT *env)
 CSCM_SA_FUNCS _cscm_sa_func_list[] = {
 	{0, cscm_is_num_long, cscm_analyze_num_long},
 	{0, cscm_is_num_double, cscm_analyze_num_double},
-	{0, cscm_is_symbol, cscm_analyze_symbol},
 	{0, cscm_is_string, cscm_analyze_string},
 	{0, cscm_is_var, cscm_analyze_var},
 
-
+	{0, cscm_is_quote, cscm_analyze_quote},
+	{0, cscm_is_quasiquote, cscm_analyze_quasiquote},
 	{0, cscm_is_assignment, cscm_analyze_assignment},
 	{0, cscm_is_definition, cscm_analyze_definition},
 	{0, cscm_is_lambda, cscm_analyze_lambda},
@@ -103,7 +104,6 @@ CSCM_SA_FUNCS _cscm_sa_func_list[] = {
 	{0, cscm_is_let, cscm_analyze_let},
 	{0, cscm_is_ao, cscm_analyze_ao}, // and/or
 	{0, cscm_is_not, cscm_analyze_not},
-	{0, cscm_is_quote, cscm_analyze_quote},
 	{0, cscm_is_combination, cscm_analyze_combination},
 
 
@@ -164,8 +164,14 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 		ret = f(n_args, args);
 
 
+		if (ret) // try to save it from freeing arguments
+			cscm_gc_inc(ret);
+
 		for (i = 0; i < n_args; i++)
 			cscm_gc_free(args[i]);
+
+		if (ret)
+			cscm_gc_dec(ret);
 	} else if (proc->type == CSCM_OBJECT_TYPE_PROC_COMP) {
 		body_ef = cscm_proc_comp_get_body(proc);
 		env = cscm_proc_comp_get_env(proc);

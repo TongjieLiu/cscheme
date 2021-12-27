@@ -25,7 +25,6 @@
 #include "text.h"
 #include "core.h"
 #include "lambda.h"
-#include "symbol.h"
 #include "num.h"
 #include "str.h"
 #include "var.h"
@@ -76,8 +75,7 @@ int cscm_is_definition(CSCM_AST_NODE *exp)
 		for (i = 0; i < var->n_childs; i++) {
 			proc_part = cscm_ast_exp_index(var, i);
 
-			if (cscm_is_symbol(proc_part)			\
-				|| cscm_is_num_long(proc_part)		\
+			if (cscm_is_num_long(proc_part)			\
 				|| cscm_is_num_double(proc_part)	\
 				|| cscm_is_string(proc_part))
 				cscm_syntax_error_report(var->filename,	\
@@ -95,8 +93,7 @@ int cscm_is_definition(CSCM_AST_NODE *exp)
 					exp->line,			\
 					CSCM_ERROR_DEFINITION_EMPTY_BODY);
 	} else {			// define a new variable
-		if (cscm_is_symbol(var)			\
-			|| cscm_is_num_long(var)	\
+		if (cscm_is_num_long(var)		\
 			|| cscm_is_num_double(var)	\
 			|| cscm_is_string(var))
 			cscm_syntax_error_report(var->filename,		\

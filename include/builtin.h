@@ -129,7 +129,7 @@ CSCM_OBJECT *cscm_builtin_proc_remainder(size_t n, CSCM_OBJECT **args);
 
 
 CSCM_OBJECT *cscm_builtin_proc_equal_num(size_t n, CSCM_OBJECT **args);
-CSCM_OBJECT *cscm_builtin_proc_equal_ss(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_equal_ssb(size_t n, CSCM_OBJECT **args);
 CSCM_OBJECT *cscm_builtin_proc_equal(size_t n, CSCM_OBJECT **args);
 
 

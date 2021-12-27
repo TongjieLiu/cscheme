@@ -248,7 +248,7 @@ void cscm_not_ef_free(CSCM_EF *ef)
 	if (ef == NULL)
 		cscm_error_report("cscm_not_ef_free", \
 				CSCM_ERROR_NULL_PTR);
-	else if (ef->type != CSCM_EF_TYPE_AO)
+	else if (ef->type != CSCM_EF_TYPE_NOT)
 		cscm_error_report("cscm_not_ef_free", \
 				CSCM_ERROR_EF_TYPE);
 
@@ -281,6 +281,8 @@ void cscm_ao_ef_free(CSCM_EF *ef)
 
 	for (i = 0; i < state->n_clause_efs; i++)
 		cscm_ef_free_tree(state->clause_efs[i]);
+
+	free(state->clause_efs);
 
 	free(state);
 

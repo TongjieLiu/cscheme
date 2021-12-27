@@ -89,8 +89,7 @@ int cscm_is_let(CSCM_AST_NODE *exp)
 					CSCM_ERROR_LET_BAD_BINDING);
 
 		var = cscm_ast_exp_index(binding, 0);
-		if (cscm_is_symbol(var)			\
-			|| cscm_is_num_long(var)	\
+		if (cscm_is_num_long(var)		\
 			|| cscm_is_num_double(var)	\
 			|| cscm_is_string(var))
 			cscm_syntax_error_report(var->filename,		\

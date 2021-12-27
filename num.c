@@ -86,12 +86,15 @@ void cscm_num_long_set(CSCM_OBJECT *num, long val)
 	long *l;
 
 
-	if (num == NULL || num->value == NULL)
+	if (num == NULL)
 		cscm_error_report("cscm_num_long_set", \
 				CSCM_ERROR_NULL_PTR);
 	else if (num->type != CSCM_OBJECT_TYPE_NUM_LONG)
 		cscm_error_report("cscm_num_long_set", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (num->value == NULL)
+		cscm_error_report("cscm_num_long_set", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	l = (long *)num->value;
@@ -106,12 +109,15 @@ void cscm_num_double_set(CSCM_OBJECT *num, double val)
 	double *d;
 
 
-	if (num == NULL || num->value == NULL)
+	if (num == NULL)
 		cscm_error_report("cscm_num_double_set", \
 				CSCM_ERROR_NULL_PTR);
 	else if (num->type != CSCM_OBJECT_TYPE_NUM_DOUBLE)
 		cscm_error_report("cscm_num_double_set", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (num->value == NULL)
+		cscm_error_report("cscm_num_double_set", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	d = (double *)num->value;
@@ -128,12 +134,15 @@ long cscm_num_long_get(CSCM_OBJECT *num)
 	long *l;
 
 
-	if (num == NULL || num->value == NULL)
+	if (num == NULL)
 		cscm_error_report("cscm_num_long_get", \
 				CSCM_ERROR_NULL_PTR);
 	else if (num->type != CSCM_OBJECT_TYPE_NUM_LONG)
 		cscm_error_report("cscm_num_long_get", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (num->value == NULL)
+		cscm_error_report("cscm_num_long_get", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	l = (long *)num->value;
@@ -148,12 +157,15 @@ double cscm_num_double_get(CSCM_OBJECT *num)
 	double *d;
 
 
-	if (num == NULL || num->value == NULL)
+	if (num == NULL)
 		cscm_error_report("cscm_num_double_get", \
 				CSCM_ERROR_NULL_PTR);
-	if (num->type != CSCM_OBJECT_TYPE_NUM_DOUBLE)
+	else if (num->type != CSCM_OBJECT_TYPE_NUM_DOUBLE)
 		cscm_error_report("cscm_num_double_get", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (num->value == NULL)
+		cscm_error_report("cscm_num_double_get", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	d = (double *)num->value;
@@ -191,9 +203,6 @@ void cscm_num_print(CSCM_OBJECT *obj, FILE *stream)
 
 int cscm_is_num_long(CSCM_AST_NODE *exp)
 {
-	char *number;
-
-
 	if (exp == NULL)
 		cscm_error_report("cscm_is_num_long", \
 				CSCM_ERROR_NULL_PTR);
@@ -204,24 +213,15 @@ int cscm_is_num_long(CSCM_AST_NODE *exp)
 				CSCM_ERROR_AST_EMPTY_SYMBOL);
 
 
-	number = cscm_text_strip_all_squotes(exp->text);
-
-	if (cscm_text_is_integer(number)) {
-		if (number != exp->text)
-			cscm_ast_symbol_set(exp, number);
-
+	if (cscm_text_is_integer(exp->text))
 		return 1;
-	} else {
+	else
 		return 0;
-	}
 }
 
 
 int cscm_is_num_double(CSCM_AST_NODE *exp)
 {
-	char *number;
-
-
 	if (exp == NULL)
 		cscm_error_report("cscm_is_num_double", \
 				CSCM_ERROR_NULL_PTR);
@@ -232,16 +232,10 @@ int cscm_is_num_double(CSCM_AST_NODE *exp)
 				CSCM_ERROR_AST_EMPTY_SYMBOL);
 
 
-	number = cscm_text_strip_all_squotes(exp->text);
-
-	if (cscm_text_is_fpn(number)) {
-		if (number != exp->text)
-			cscm_ast_symbol_set(exp, number);
-
+	if (cscm_text_is_fpn(exp->text))
 		return 1;
-	} else {
+	else
 		return 0;
-	}
 }
 
 
@@ -349,6 +343,7 @@ void cscm_num_free(CSCM_OBJECT *obj)
 				CSCM_ERROR_OBJECT_TYPE);
 
 
-	free(obj->value);
+	free(obj->value); // pointed to memories allocated when created
+
 	free(obj);
 }

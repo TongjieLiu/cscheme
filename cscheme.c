@@ -106,9 +106,11 @@ void cscm_print_basic_docs()
 	puts("(= number1 number2) -> true/false");
 	puts("(eq? symbol1 symbol2) -> true/false");
 	puts("(eq? string1 string2) -> true/false");
+	puts("(eq? bool1 bool2) -> true/false");
 	puts("(equal? number1 number2) -> true/false");
 	puts("(equal? symbol1 symbol2) -> true/false");
 	puts("(equal? string1 string2) -> true/false");
+	puts("(equal? bool1 bool2) -> true/false");
 
 	puts("");
 

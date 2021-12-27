@@ -33,6 +33,7 @@
 #include "logical.h"
 #include "core.h"
 #include "quote.h"
+#include "quasiquote.h"
 #include "ef.h"
 
 
@@ -141,6 +142,9 @@ CSCM_EF_FREE_FUNC _cscm_ef_free_func_list[] = {
 	cscm_symbol_ef_free,
 	cscm_string_ef_free,
 	cscm_var_ef_free,
+
+	cscm_quote_ef_free,
+	cscm_quasiquote_ef_free,
 	cscm_assignment_ef_free,
 	cscm_definition_ef_free,
 	cscm_lambda_ef_free,

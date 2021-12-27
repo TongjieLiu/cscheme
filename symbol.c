@@ -20,11 +20,10 @@
 
 #include "object.h"
 #include "error.h"
-#include "text.h"
 #include "ef.h"
 #include "ast.h"
 #include "gc.h"
-#include "pair.h"
+#include "text.h"
 #include "symbol.h"
 
 
@@ -78,12 +77,42 @@ void cscm_symbol_set(CSCM_OBJECT *symbol, char *text)
 
 
 
+/*	Since we'll free the memory of old text, we should not call
+ * this function with string literals and any substrings of the old
+ * text as the new text to be set. */
+void cscm_symbol_set_simple(CSCM_OBJECT *symbol, char *text)
+{
+	if (symbol == NULL)
+		cscm_error_report("cscm_symbol_set_simple", \
+				CSCM_ERROR_NULL_PTR);
+	else if (symbol->type != CSCM_OBJECT_TYPE_SYMBOL)
+		cscm_error_report("cscm_symbol_set_simple", \
+				CSCM_ERROR_OBJECT_TYPE);
+	else if (text == NULL)
+		cscm_error_report("cscm_symbol_set_simple", \
+				CSCM_ERROR_NULL_PTR);
+
+
+	if (symbol->value)
+		free(symbol->value);
+
+	symbol->value = text;
+}
+
+
+
+
 char *cscm_symbol_get(CSCM_OBJECT *symbol)
 {
 	if (symbol == NULL)
-		cscm_error_report("cscm_symbol_get", CSCM_ERROR_NULL_PTR);
+		cscm_error_report("cscm_symbol_get", \
+				CSCM_ERROR_NULL_PTR);
 	else if (symbol->type != CSCM_OBJECT_TYPE_SYMBOL)
-		cscm_error_report("cscm_symbol_get", CSCM_ERROR_OBJECT_TYPE);
+		cscm_error_report("cscm_symbol_get", \
+				CSCM_ERROR_OBJECT_TYPE);
+	else if (symbol->value == NULL)
+		cscm_error_report("cscm_symbol_get", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	return (char *)symbol->value;
@@ -109,93 +138,36 @@ void cscm_symbol_print(CSCM_OBJECT *obj, FILE *stream)
 
 
 
-int cscm_is_symbol(CSCM_AST_NODE *exp)
-{
-	if (exp == NULL)
-		cscm_error_report("cscm_is_symbol", \
-				CSCM_ERROR_NULL_PTR);
-	else if (!cscm_ast_is_symbol(exp))
-		return 0;
-	else if (cscm_ast_is_symbol_empty(exp))
-		cscm_error_report("cscm_is_symbol", \
-				CSCM_ERROR_AST_EMPTY_SYMBOL);
-	else if (cscm_text_is_squoted(exp->text)		\
-		&& !cscm_text_is_integer(			\
-			cscm_text_strip_all_squotes(exp->text))	\
-		&& !cscm_text_is_fpn(				\
-			cscm_text_strip_all_squotes(exp->text))	\
-		&& !cscm_text_is_dquoted(			\
-			cscm_text_strip_all_squotes(exp->text)))
-
-		return 1;
-	else
-		return 0;
-}
-
-
-
-
-CSCM_OBJECT *_cscm_symbol_text_to_slist(char *text)
-{
-	CSCM_OBJECT *symbol;
-	CSCM_OBJECT *elems[2];
-
-
-	if (cscm_text_is_squoted(text)) {
-		elems[0] = cscm_symbol_create();
-		cscm_symbol_set(elems[0], "quote");
-
-		elems[1] = _cscm_symbol_text_to_slist( \
-				cscm_text_strip_squote(text));
-
-		return cscm_list_create(2, elems);
-	} else {
-		symbol = cscm_symbol_create();
-		cscm_symbol_set(symbol, text);
-
-		return symbol;
-	}
-}
-
-
-
-
 CSCM_OBJECT *_cscm_symbol_ef(void *state, CSCM_OBJECT *env)
 {
-	char *text;
-
-	CSCM_OBJECT *symbol, *list;
-
-
-	text = (char *)state;
-
-	if (cscm_text_is_squoted(text)) {
-		list = _cscm_symbol_text_to_slist(text);
-
-		return list;
-	} else {
-		symbol = cscm_symbol_create();
-		cscm_symbol_set(symbol, text);
-
-		return symbol;
-	}
+	return (CSCM_OBJECT *)state;
 }
 
 
 CSCM_EF *cscm_analyze_symbol(CSCM_AST_NODE *exp)
 {
 	char *text;
+	CSCM_OBJECT *symbol;
 
-
-	text = cscm_text_strip_squote(exp->text);
 
 	/*	All scheme symbols should be in lower-case in order
 	 * to simplify processes of comparison. */
-	text = cscm_text_cpy_lowercase(text);
+	text = cscm_text_cpy_lowercase(exp->text);
+
+
+	symbol = cscm_symbol_create();
+
+	cscm_symbol_set_simple(symbol, text);
+
+
+	/*	The execution function only has 1 copy of this
+	 * object, therefore we have to keep it safe no matter
+	 * how many times the execution function is being called. */
+	cscm_gc_inc(symbol);
 
 
 	return cscm_ef_construct(CSCM_EF_TYPE_SYMBOL,	\
-				text,			\
+				symbol,			\
 				_cscm_symbol_ef);
 }
 
@@ -212,7 +184,8 @@ void cscm_symbol_free(CSCM_OBJECT *obj)
 				CSCM_ERROR_OBJECT_TYPE);
 
 
-	free(obj->value);
+	if (obj->value)
+		free(obj->value);
 
 	free(obj);
 }
@@ -222,6 +195,9 @@ void cscm_symbol_free(CSCM_OBJECT *obj)
 
 void cscm_symbol_ef_free(CSCM_EF *ef)
 {
+	CSCM_OBJECT *symbol;
+
+
 	if (ef == NULL)
 		cscm_error_report("cscm_symbol_ef_free", \
 				CSCM_ERROR_NULL_PTR);
@@ -230,7 +206,11 @@ void cscm_symbol_ef_free(CSCM_EF *ef)
 				CSCM_ERROR_OBJECT_TYPE);
 
 
-	free(ef->state);
+	symbol = (CSCM_OBJECT *)ef->state;
+
+	cscm_gc_dec(symbol);
+	cscm_gc_free(symbol);
+
 
 	free(ef);
 }

@@ -41,8 +41,11 @@ typedef struct _CSCM_AO_EF_STATE CSCM_AO_EF_STATE;
 
 
 
-#define CSCM_ERROR_NOT_N_CLAUSES	"incorrect number of clauses"
-#define CSCM_ERROR_AO_INCOMPLETE	"incomplete and/or expression"
+#define CSCM_ERROR_NOT_N_CLAUSES	\
+	"incorrect number of clauses in not expression"
+
+#define CSCM_ERROR_AO_INCOMPLETE	\
+	"incomplete and/or expression in and/or expression"
 
 
 

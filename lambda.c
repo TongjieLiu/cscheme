@@ -22,10 +22,8 @@
 #include "object.h"
 #include "ef.h"
 #include "begin.h"
-#include "symbol.h"
 #include "text.h"
 #include "proc.h"
-#include "symbol.h"
 #include "num.h"
 #include "str.h"
 #include "var.h"
@@ -79,8 +77,7 @@ int cscm_is_lambda(CSCM_AST_NODE *exp)
 	for (i = 0; i < params->n_childs; i++) { // support no formal parameter
 		param = cscm_ast_exp_index(params, i);
 
-		if (cscm_is_symbol(param)		\
-			|| cscm_is_num_long(param)	\
+		if (cscm_is_num_long(param)		\
 			|| cscm_is_num_double(param)	\
 			|| cscm_is_string(param))
 			cscm_syntax_error_report(param->filename,	\

@@ -89,6 +89,9 @@ char *cscm_string_get(CSCM_OBJECT *string)
 	else if (string->type != CSCM_OBJECT_TYPE_STRING)
 		cscm_error_report("cscm_string_get", \
 				CSCM_ERROR_OBJECT_TYPE);
+	else if (string->value == NULL)
+		cscm_error_report("cscm_string_get", \
+				CSCM_ERROR_EMPTY_OBJECT);
 
 
 	return (char *)string->value;
@@ -130,9 +133,6 @@ void cscm_string_print(CSCM_OBJECT *obj, FILE *stream)
 
 int cscm_is_string(CSCM_AST_NODE *exp)
 {
-	char *string;
-
-
 	if (exp == NULL)
 		cscm_error_report("cscm_is_string", \
 				CSCM_ERROR_NULL_PTR);
@@ -143,16 +143,10 @@ int cscm_is_string(CSCM_AST_NODE *exp)
 				CSCM_ERROR_AST_EMPTY_SYMBOL);
 
 
-	string = cscm_text_strip_all_squotes(exp->text);
-
-	if (cscm_text_is_dquoted(string)) {
-		if (string != exp->text)
-			cscm_ast_symbol_set(exp, string);
-
+	if (cscm_text_is_dquoted(exp->text))
 		return 1;
-	} else {
+	else
 		return 0;
-	}
 }
 
 
@@ -204,7 +198,8 @@ void cscm_string_free(CSCM_OBJECT *obj)
 				CSCM_ERROR_OBJECT_TYPE);
 
 
-	free(obj->value);
+	if (obj->value)
+		free(obj->value);
 
 	free(obj);
 }

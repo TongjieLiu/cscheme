@@ -39,12 +39,12 @@ typedef struct _CSCM_ASSIGNMENT_EF_STATE CSCM_ASSIGNMENT_EF_STATE;
 
 
 
-#define CSCM_ERROR_ASSIGNMENT_NO_VAR	"variable is not specified"
-#define CSCM_ERROR_ASSIGNMENT_BAD_VAR	"bad variable"
+#define CSCM_ERROR_ASSIGNMENT_NO_VAR	"assignment variable is not specified"
+#define CSCM_ERROR_ASSIGNMENT_BAD_VAR	"bad assignment variable"
 
 
-#define CSCM_ERROR_ASSIGNMENT_NO_VAL	"value is not specified"
-#define CSCM_ERROR_ASSIGNMENT_BAD_VAL	"bad value"
+#define CSCM_ERROR_ASSIGNMENT_NO_VAL	"assignment value is not specified"
+#define CSCM_ERROR_ASSIGNMENT_BAD_VAL	"bad assignment value"
 
 
 

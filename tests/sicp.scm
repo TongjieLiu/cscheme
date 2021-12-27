@@ -1,4 +1,4 @@
-; An exercise solution for the SICP, 2nd edition
+; A scheme evaluator & a register-machine simulator & a scheme compiler
 ;
 ; Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
 ;
@@ -21,6 +21,7 @@
 ; SECTION 3: The Register-Machine Simulator
 ; SECTION 4: The Compiler
 ; SECTION 5: Syntax Procedures
+; SECTION 6: Examples
 ;
 ;
 ; Interfaces
@@ -1084,14 +1085,13 @@ eval-load
 		  ((eq? m 'trace)
 		      (lambda (m)
 			  (cond ((eq? m 'on)
-				    (set! register-trace-enabled #t)
-				    "REGISTER: trace on")
+                                    (begin (set! register-trace-enabled #t)
+				           (printn "REGISTER: trace on")))
 				((eq? m 'off)
-				    (set! register-trace-enabled #f)
-				    "REGISTER: trace off")
+                                    (begin (set! register-trace-enabled #f)
+				           (printn "REGISTER: trace off")))
 				(else (error "REGISTER TRACE: unexpected message:" m)))))
-		  (else (error "REGISTER: unexpected message:"
-			       m))))
+		  (else (error "REGISTER: unexpected message:" m))))
 
 	dispatch))
 
@@ -1284,9 +1284,9 @@ eval-load
 		      ((eq? m 'allocate-register) allocate-register)
 		      ((eq? m 'get-register) get-register)
 		      ((eq? m 'start)
-		          (set! machine-suspended-next-procedure #f)
-		          (register-set-contents! pc machine-instruction-sequence)
-			  (execute))
+		          (begin (set! machine-suspended-next-procedure #f)
+		                 (register-set-contents! pc machine-instruction-sequence)
+			         (execute)))
 		      ((eq? m 'install-labels)
 		          (lambda (labels)
 			      (set! machine-labels
@@ -1304,18 +1304,18 @@ eval-load
 		          (lambda (m)
 			      (cond ((eq? m '=) machine-instruction-count)
 				    ((eq? m 'reset)
-				        (set! machine-instruction-count 0)
-				        'reseted)
+				        (begin (set! machine-instruction-count 0)
+				               (printn 'reseted)))
 				    (else (error "GET INSTRUCTION COUNT: unexpected message:"
                                                  m)))))
 		      ((eq? m 'trace)
 		          (lambda (m)
 			      (cond ((eq? m 'on)
-				        (set! machine-trace-enabled #t)
-					"machine: trace on")
+				        (begin (set! machine-trace-enabled #t)
+					       (printn "machine: trace on")))
 				    ((eq? m 'off)
-					(set! machine-trace-enabled #f)
-					"machine: trace off")
+					(begin (set! machine-trace-enabled #f)
+					       (printn "machine: trace off")))
 				    (else (error "MACHINE TRACE: unexpected message")))))
 		      ((eq? m 'execute)
 		          (execute))
@@ -3193,3 +3193,11 @@ eval-load
 		  (display item)
 		  (newline))
 	      (instruction-sequence-statements iseq)))
+
+
+
+
+; --- SECTION 6: Examples ---
+; A. an interactive scheme compiler
+(make-eceval)
+(compiler-start)

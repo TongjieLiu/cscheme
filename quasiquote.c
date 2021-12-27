@@ -1,4 +1,4 @@
-/* quote.c -- scheme quote expression(special form)
+/* quasiquote.c -- scheme quasiquote expression(special form)
 
    Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
 
@@ -20,24 +20,25 @@
 
 #include "error.h"
 #include "ast.h"
+#include "core.h"
 #include "ef.h"
 #include "object.h"
 #include "symbol.h"
 #include "num.h"
 #include "str.h"
 #include "pair.h"
-#include "quote.h"
+#include "quasiquote.h"
 
 
 
 
-int cscm_is_quote(CSCM_AST_NODE *exp)
+int cscm_is_quasiquote(CSCM_AST_NODE *exp)
 {
 	CSCM_AST_NODE *head;
 
 
 	if (exp == NULL)
-		cscm_error_report("cscm_is_quote", \
+		cscm_error_report("cscm_is_quasiquote", \
 				CSCM_ERROR_NULL_PTR);
 	else if (!cscm_ast_is_exp(exp))
 		return 0;
@@ -48,14 +49,14 @@ int cscm_is_quote(CSCM_AST_NODE *exp)
 	head = cscm_ast_exp_index(exp, 0);
 	if (!cscm_ast_is_symbol(head))
 		return 0;
-	else if (!cscm_ast_symbol_text_equal(head, "quote"))
+	else if (!cscm_ast_symbol_text_equal(head, "quasiquote"))
 		return 0;
 
 
 	if (exp->n_childs != 2)
 		cscm_syntax_error_report(exp->filename,		\
 					exp->line,		\
-					CSCM_ERROR_QUOTE_N_CLAUSES);
+					CSCM_ERROR_QUASIQUOTE_N_CLAUSES);
 	else
 		return 1;
 }
@@ -63,14 +64,15 @@ int cscm_is_quote(CSCM_AST_NODE *exp)
 
 
 
-CSCM_QUOTE_EF_STATE *_cscm_quote_ef_state_create()
+CSCM_QUASIQUOTE_EF_STATE *_cscm_quasiquote_ef_state_create()
 {
-	CSCM_QUOTE_EF_STATE *state;
+	CSCM_QUASIQUOTE_EF_STATE *state;
 
 
-	state = malloc(sizeof(CSCM_QUOTE_EF_STATE));
+	state = malloc(sizeof(CSCM_QUASIQUOTE_EF_STATE));
 	if (state == NULL)
-		cscm_libc_fail("cscm_quote_ef_state_create", "malloc");
+		cscm_libc_fail("cscm_quasiquote_ef_state_create", \
+				"malloc");
 
 
 	state->n_efs = 0;
@@ -81,17 +83,17 @@ CSCM_QUOTE_EF_STATE *_cscm_quote_ef_state_create()
 }
 
 
-CSCM_OBJECT *_cscm_quote_ef(void *state, CSCM_OBJECT *env)
+CSCM_OBJECT *_cscm_quasiquote_ef(void *state, CSCM_OBJECT *env)
 {
 	int i;
 
-	CSCM_QUOTE_EF_STATE *s;
+	CSCM_QUASIQUOTE_EF_STATE *s;
 
 	CSCM_OBJECT **objs;
 	CSCM_OBJECT *ret;
 
 
-	s = (CSCM_QUOTE_EF_STATE *)state;
+	s = (CSCM_QUASIQUOTE_EF_STATE *)state;
 
 
 	if (s->n_efs == 0) {
@@ -107,20 +109,46 @@ CSCM_OBJECT *_cscm_quote_ef(void *state, CSCM_OBJECT *env)
 		free(objs);
 	}
 
+
 	return ret;
 }
 
 
-CSCM_EF *_do_cscm_analyze_quote(CSCM_AST_NODE *node)
+int _cscm_quasiquote_is_unquote(CSCM_AST_NODE *exp)
+{
+	CSCM_AST_NODE *head;
+
+
+	if (cscm_ast_is_exp_empty(exp))
+		return 0;
+
+
+	head = cscm_ast_exp_index(exp, 0);
+	if (!cscm_ast_is_symbol(head))
+		return 0;
+	else if (!cscm_ast_symbol_text_equal(head, "unquote"))
+		return 0;
+
+
+	if (exp->n_childs != 2)
+		cscm_syntax_error_report(exp->filename,		\
+					exp->line,		\
+					CSCM_ERROR_UNQUOTE_N_CLAUSES);
+	else
+		return 1;
+}
+
+
+CSCM_EF *_do_cscm_analyze_quasiquote(CSCM_AST_NODE *node)
 {
 	int i;
-	CSCM_AST_NODE *child;
+	CSCM_AST_NODE *clause, *child;
 
-	CSCM_QUOTE_EF_STATE *state;
+	CSCM_QUASIQUOTE_EF_STATE *state;
 
 
 	if (node == NULL) {
-		cscm_error_report("_do_cscm_analyze_quote", \
+		cscm_error_report("_do_cscm_analyze_quasiquote", \
 				CSCM_ERROR_NULL_PTR);
 	} else if (cscm_ast_is_symbol(node)) {
 		if (cscm_is_num_long(node))
@@ -132,60 +160,67 @@ CSCM_EF *_do_cscm_analyze_quote(CSCM_AST_NODE *node)
 		else
 			return cscm_analyze_symbol(node);
 	} else if (cscm_ast_is_exp(node)) {
-		state = _cscm_quote_ef_state_create();
+		if (_cscm_quasiquote_is_unquote(node)) {
+			clause = cscm_ast_exp_index(node, 1);
 
-		state->n_efs = node->n_childs;
-
-		if (node->n_childs == 0) {
-			state->efs = NULL;
+			return cscm_analyze(clause);
 		} else {
-			state->efs = cscm_ef_ptrs_create(node->n_childs);
+			state = _cscm_quasiquote_ef_state_create();
 
-			for (i = 0; i < node->n_childs; i++) {
-				child = cscm_ast_exp_index(node, i);
-				state->efs[i] = _do_cscm_analyze_quote(child);
+			state->n_efs = node->n_childs;
+
+			if (node->n_childs == 0) {
+				state->efs = NULL;
+			} else {
+				state->efs = cscm_ef_ptrs_create(node->n_childs);
+
+				for (i = 0; i < node->n_childs; i++) {
+					child = cscm_ast_exp_index(node, i);
+					state->efs[i] = \
+					    _do_cscm_analyze_quasiquote(child);
+				}
 			}
+
+
+			return cscm_ef_construct(CSCM_EF_TYPE_QUASIQUOTE, \
+						state,                    \
+						_cscm_quasiquote_ef);
 		}
-
-
-		return cscm_ef_construct(CSCM_EF_TYPE_QUOTE,	\
-					state,			\
-					_cscm_quote_ef);
 	} else {
-		cscm_error_report("_do_cscm_analyze_quote", \
+		cscm_error_report("_do_cscm_analyze_quasiquote", \
 				CSCM_ERROR_AST_NODE_TYPE);
 	}
 }
 
 
-CSCM_EF *cscm_analyze_quote(CSCM_AST_NODE *exp)
+CSCM_EF *cscm_analyze_quasiquote(CSCM_AST_NODE *exp)
 {
 	CSCM_AST_NODE *clause;
 
 
 	clause = cscm_ast_exp_index(exp, 1);
-	return _do_cscm_analyze_quote(clause);
+	return _do_cscm_analyze_quasiquote(clause);
 }
 
 
 
 
-void cscm_quote_ef_free(CSCM_EF *ef)
+void cscm_quasiquote_ef_free(CSCM_EF *ef)
 {
 	int i;
 
-	CSCM_QUOTE_EF_STATE *state;
+	CSCM_QUASIQUOTE_EF_STATE *state;
 
 
 	if (ef == NULL)
-		cscm_error_report("cscm_quote_ef_free", \
+		cscm_error_report("cscm_quasiquote_ef_free", \
 				CSCM_ERROR_NULL_PTR);
-	else if (ef->type != CSCM_EF_TYPE_QUOTE)
-		cscm_error_report("cscm_quote_ef_free", \
+	else if (ef->type != CSCM_EF_TYPE_QUASIQUOTE)
+		cscm_error_report("cscm_quasiquote_ef_free", \
 				CSCM_ERROR_EF_TYPE);
 
 
-	state = (CSCM_QUOTE_EF_STATE *)ef->state;
+	state = (CSCM_QUASIQUOTE_EF_STATE *)ef->state;
 
 
 	for (i = 0; i < state->n_efs; i++)

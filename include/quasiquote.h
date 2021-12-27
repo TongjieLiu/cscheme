@@ -1,4 +1,4 @@
-/* quote.h -- scheme quote expression(special form)
+/* quasiquote.h -- scheme quasiquote expression(special form)
 
    Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
 
@@ -15,9 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#ifndef __CSCM_QUOTE_H__
+#ifndef __CSCM_QUASIQUOTE_H__
 
-#define __CSCM_QUOTE_H__
+#define __CSCM_QUASIQUOTE_H__
 
 
 
@@ -30,31 +30,35 @@
 
 
 
-struct _CSCM_QUOTE_EF_STATE {
+struct _CSCM_QUASIQUOTE_EF_STATE {
 	size_t n_efs;
 	CSCM_EF **efs;
 };
 
 
-typedef struct _CSCM_QUOTE_EF_STATE CSCM_QUOTE_EF_STATE;
+typedef struct _CSCM_QUASIQUOTE_EF_STATE CSCM_QUASIQUOTE_EF_STATE;
 
 
 
 
-#define CSCM_ERROR_QUOTE_N_CLAUSES	"quote expression only accept 1 clause"
+#define CSCM_ERROR_QUASIQUOTE_N_CLAUSES	\
+	"quasiquote expression only accept 1 clause"
+
+#define CSCM_ERROR_UNQUOTE_N_CLAUSES	\
+	"unquote expression only accept 1 clause"
 
 
 
 
-int cscm_is_quote(CSCM_AST_NODE *exp);
+int cscm_is_quasiquote(CSCM_AST_NODE *exp);
 
 
-CSCM_EF *cscm_analyze_quote(CSCM_AST_NODE *exp);
+CSCM_EF *cscm_analyze_quasiquote(CSCM_AST_NODE *exp);
 
 
 
 
-void cscm_quote_ef_free(CSCM_EF *ef);
+void cscm_quasiquote_ef_free(CSCM_EF *ef);
 
 
 

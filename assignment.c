@@ -24,7 +24,6 @@
 #include "env.h"
 #include "text.h"
 #include "core.h"
-#include "symbol.h"
 #include "num.h"
 #include "str.h"
 #include "var.h"
@@ -62,8 +61,7 @@ int cscm_is_assignment(CSCM_AST_NODE *exp)
 
 
 	var = cscm_ast_exp_index(exp, 1);
-	if (cscm_is_symbol(var)			\
-		|| cscm_is_num_long(var)	\
+	if (cscm_is_num_long(var)		\
 		|| cscm_is_num_double(var)	\
 		|| cscm_is_string(var))
 		cscm_syntax_error_report(var->filename,		\

@@ -30,12 +30,20 @@
 
 
 
-#define CSCM_ERROR_LAMBDA_NO_PARAM	"formal parameter is not specified"
-#define CSCM_ERROR_LAMBDA_BAD_PARAMS	"bad formal parameters"
-#define CSCM_ERROR_LAMBDA_BAD_PARAM	"bad formal parameter"
+#define CSCM_ERROR_LAMBDA_NO_PARAM	\
+	"formal parameter is not specified in lambda expression"
+
+#define CSCM_ERROR_LAMBDA_BAD_PARAMS	\
+	"bad formal parameters in lambda expression"
+
+#define CSCM_ERROR_LAMBDA_BAD_PARAM	\
+	"bad formal parameter in lambda expression"
 
 
-#define CSCM_ERROR_LAMBDA_EMPTY_BODY	"empty body"
+
+
+#define CSCM_ERROR_LAMBDA_EMPTY_BODY	\
+	"empty body in lambda expression"
 
 
 

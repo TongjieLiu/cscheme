@@ -133,20 +133,10 @@ CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename);
 
 #define CSCM_ERROR_AST_EOF			"unexpected EOF"
 #define CSCM_ERROR_AST_LC			"unexpected line continuation"
-#define CSCM_ERROR_AST_SQUOTE			"unexpected SINGLE-QUOTE(')"
+#define CSCM_ERROR_AST_SQUOTE			"unexpected SINGLE-QUOTE(\')"
 #define CSCM_ERROR_AST_DQUOTE			"unexpected DOUBLE-QUOTE(\")"
 #define CSCM_ERROR_AST_CP			"unexpected \")\""
 #define CSCM_ERROR_AST_OP			"unexpected \"(\""
-#define CSCM_ERROR_AST_ESS			"empty scheme symbol"
-
-
-
-
-#define CSCM_ERROR_AST_BQUOTE			"unexpected BACKQUOTE(`)"
-#define CSCM_ERROR_AST_DUP_BQUOTE		"duplicated BACKQUOTE(`)"
-#define CSCM_ERROR_AST_SQUOTE_BQUOTE		"BACKQUOTE(`) after SINGLE-QUOTE(')"
-#define CSCM_ERROR_AST_BQUOTE_SQUOTE		"SINGLE-QUOTE(') after BACKQUOTE(`)"
-
 
 
 

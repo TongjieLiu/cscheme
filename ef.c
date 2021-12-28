@@ -34,6 +34,7 @@
 #include "core.h"
 #include "quote.h"
 #include "quasiquote.h"
+#include "ast.h"
 #include "ef.h"
 
 
@@ -68,6 +69,9 @@ void _cscm_ef_dec_total_count()
 
 CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env)
 {
+	CSCM_OBJECT *ret;
+
+
 	if (ef == NULL)
 		cscm_error_report("cscm_ef_exec", \
 				CSCM_ERROR_NULL_PTR);
@@ -75,14 +79,23 @@ CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env)
 		cscm_error_report("cscm_ef_exec", \
 				CSCM_ERROR_OBJECT_TYPE);
 
+	if (ef->exp)
+		cscm_ef_backtrace_push(ef->exp);
 
-	return ef->f(ef->state, env);
+	ret =  ef->f(ef->state, env);
+
+	if (ef->exp)
+		cscm_ef_backtrace_pop();
+
+
+	return ret;
 }
 
 
 
 
-CSCM_EF *cscm_ef_construct(int type, void *state, CSCM_EF_FUNC f)
+CSCM_EF *cscm_ef_construct(int type, \
+			void *state, CSCM_AST_NODE *exp, CSCM_EF_FUNC f)
 {
 	CSCM_EF *ef;
 
@@ -100,6 +113,7 @@ CSCM_EF *cscm_ef_construct(int type, void *state, CSCM_EF_FUNC f)
 	ef->type = type;
 
 	ef->state = state;
+	ef->exp = exp;
 	ef->f = f;
 
 	#ifdef __CSCM_EF_DEBUG__
@@ -174,4 +188,43 @@ void cscm_ef_free_tree(CSCM_EF *ef)
 	#ifdef __CSCM_EF_DEBUG__
 		_cscm_ef_dec_total_count();
 	#endif
+}
+
+
+
+
+size_t _cscm_ef_backtrace_count = 0;
+CSCM_AST_NODE *_cscm_ef_backtrace_stack[CSCM_EF_BACKTRACE_MAX_N];
+
+
+void cscm_ef_backtrace_push(CSCM_AST_NODE *exp)
+{
+	if (exp == NULL)
+		cscm_error_report("cscm_ef_backtrace_push", \
+				CSCM_ERROR_NULL_PTR);
+	else if (_cscm_ef_backtrace_count >= CSCM_EF_BACKTRACE_MAX_N)
+		cscm_error_report("cscm_ef_backtrace_push", \
+				CSCM_ERROR_EF_BACKTRACE_FULL_STACK);
+
+
+	_cscm_ef_backtrace_stack[_cscm_ef_backtrace_count] = exp;
+	_cscm_ef_backtrace_count++;
+}
+
+
+CSCM_AST_NODE *cscm_ef_backtrace_pop()
+{
+	if (_cscm_ef_backtrace_count == 0)
+		cscm_error_report("cscm_ef_backtrace_pop", \
+				CSCM_ERROR_EF_BACKTRACE_EMPTY_STACK);
+
+
+	_cscm_ef_backtrace_count--;
+	return _cscm_ef_backtrace_stack[_cscm_ef_backtrace_count];
+}
+
+
+int cscm_ef_backtrace_is_empty()
+{
+	return _cscm_ef_backtrace_count == 0 ? 1 : 0;
 }

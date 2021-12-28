@@ -928,3 +928,46 @@ CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename)
 
 	return ret;
 }
+
+
+
+
+void cscm_ast_print_tree(CSCM_AST_NODE *node)
+{
+	int i;
+	CSCM_AST_NODE *child;
+
+
+	if (node == NULL)
+		cscm_error_report("cscm_ast_print_tree", \
+				CSCM_ERROR_NULL_PTR);
+
+
+	if (cscm_ast_is_symbol(node)) {
+		if (cscm_ast_is_symbol_empty(node))
+			cscm_error_report("cscm_ast_print_tree", \
+					CSCM_ERROR_AST_EMPTY_SYMBOL);
+		else
+			fputs(node->text, stdout);
+	} else if (cscm_ast_is_exp(node)) {
+		if (cscm_ast_is_exp_empty(node)) {
+			fputs("()", stdout);
+		} else {
+			fputc('(', stdout);
+
+			child = cscm_ast_exp_index(node, 0);
+			cscm_ast_print_tree(child);
+
+			for (i = 1; i < node->n_childs; i++) {
+				fputc(' ', stdout);
+				child = cscm_ast_exp_index(node, i);
+				cscm_ast_print_tree(child);
+			}
+
+			fputc(')', stdout);
+		}
+	} else {
+		cscm_error_report("cscm_ast_print_tree", \
+				CSCM_ERROR_AST_NODE_TYPE);
+	}
+}

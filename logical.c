@@ -162,10 +162,12 @@ CSCM_EF *cscm_analyze_ao(CSCM_AST_NODE *exp)
 	if (cscm_ast_symbol_text_equal(type, "and"))
 		return cscm_ef_construct(CSCM_EF_TYPE_AO,	\
 					state,			\
+					exp,			\
 					_cscm_and_ef);
 	else
 		return cscm_ef_construct(CSCM_EF_TYPE_AO,	\
 					state,			\
+					exp,			\
 					_cscm_or_ef);
 }
 

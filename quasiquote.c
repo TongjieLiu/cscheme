@@ -184,6 +184,7 @@ CSCM_EF *_do_cscm_analyze_quasiquote(CSCM_AST_NODE *node)
 
 			return cscm_ef_construct(CSCM_EF_TYPE_QUASIQUOTE, \
 						state,                    \
+						NULL,                     \
 						_cscm_quasiquote_ef);
 		}
 	} else {

@@ -149,6 +149,7 @@ CSCM_EF *cscm_analyze_assignment(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_ASSIGNMENT,	\
 				state,				\
+				exp,				\
 				_cscm_assignment_ef);
 }
 

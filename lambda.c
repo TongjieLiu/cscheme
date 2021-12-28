@@ -139,6 +139,7 @@ CSCM_EF *cscm_analyze_lambda(CSCM_AST_NODE *exp)
 {
 	int i;
 	CSCM_AST_NODE *param, *params;
+	CSCM_AST_NODE *body;
 
 	CSCM_LAMBDA_EF_STATE *state;
 
@@ -159,13 +160,20 @@ CSCM_EF *cscm_analyze_lambda(CSCM_AST_NODE *exp)
 		state->params[i] = cscm_text_cpy(param->text);
 	}
 
-	cscm_ast_exp_drop_first(exp); // drop "lambda"
-	cscm_ast_exp_drop_first(exp); // drop formal parameters
-	state->body = cscm_analyze_seq(exp);
+
+	body = cscm_ast_exp_create(exp->filename, exp->line);
+
+	for (i = 2; i < exp->n_childs; i++)
+		cscm_ast_exp_append(body, cscm_ast_exp_index(exp, i));
+
+	state->body = cscm_analyze_seq(body);
+
+	cscm_ast_free_exp(body);
 
 
 	return cscm_ef_construct(CSCM_EF_TYPE_LAMBDA,	\
 				state,			\
+				exp,			\
 				_cscm_lambda_ef);
 }
 

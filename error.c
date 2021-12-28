@@ -21,13 +21,31 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "ef.h"
+#include "ast.h"
 
 
 
 
 void cscm_error_report(char *func, char *msg)
 {
-	fprintf(stderr, "%s(): %s\n", func, msg);
+	int i;
+	CSCM_AST_NODE *exp;
+
+
+	fprintf(stderr, "%s(): %s\n\n", func, msg);
+
+	if (!cscm_ef_backtrace_is_empty())
+		puts("-------------------- BACKTRACE --------------------");
+
+	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
+		exp = cscm_ef_backtrace_pop();
+
+		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		cscm_ast_print_tree(exp);
+		puts("");
+	}
+
 	exit(1);
 }
 
@@ -45,7 +63,24 @@ void cscm_syntax_error_report(char *filename, size_t line, char *msg)
 
 void cscm_runtime_error_report(char *object_name, char *msg)
 {
-	fprintf(stderr, "\"%s\": %s\n", object_name, msg);
+	int i;
+	CSCM_AST_NODE *exp;
+
+
+	fprintf(stderr, "\"%s\": %s\n\n", object_name, msg);
+
+	if (!cscm_ef_backtrace_is_empty())
+		puts("-------------------- BACKTRACE --------------------");
+
+	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
+		exp = cscm_ef_backtrace_pop();
+
+		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		cscm_ast_print_tree(exp);
+		puts("");
+	}
+
+
 	exit(1);
 }
 
@@ -54,6 +89,22 @@ void cscm_runtime_error_report(char *object_name, char *msg)
 
 void cscm_libc_fail(char *pos, char *name)
 {
-	fprintf(stderr, "%s(): %s(): %s\n", pos, name, strerror(errno));
+	int i;
+	CSCM_AST_NODE *exp;
+
+
+	fprintf(stderr, "%s(): %s(): %s\n\n", pos, name, strerror(errno));
+
+	if (!cscm_ef_backtrace_is_empty())
+		puts("-------------------- BACKTRACE --------------------");
+
+	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
+		exp = cscm_ef_backtrace_pop();
+
+		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		cscm_ast_print_tree(exp);
+		puts("");
+	}
+
 	exit(1);
 }

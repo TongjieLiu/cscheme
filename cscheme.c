@@ -391,6 +391,13 @@ int main(int argc, char *argv[])
 		puts("");
 	#endif
 
+
+	#ifdef __CSCM_GC_DEBUG__
+		cscm_gc_show_total_object_count("FREE-AST");
+	#endif
+	cscm_ast_free_tree(exp);
+
+
 	if (result) {
 		cscm_gc_dec(result);
 		cscm_gc_free(result);

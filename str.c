@@ -182,6 +182,7 @@ CSCM_EF *cscm_analyze_string(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_STRING,	\
 				string,			\
+				NULL,			\
 				_cscm_string_ef);
 }
 

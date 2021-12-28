@@ -169,6 +169,7 @@ CSCM_EF *cscm_analyze_seq(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_SEQ,	\
 				state,			\
+				NULL,			\
 				_cscm_seq_ef);
 }
 

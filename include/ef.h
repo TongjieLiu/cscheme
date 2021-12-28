@@ -26,6 +26,7 @@
 
 #include "cscheme.h"
 #include "object.h"
+#include "ast.h"
 
 
 
@@ -56,6 +57,11 @@
 
 
 
+#define CSCM_EF_BACKTRACE_MAX_N		32
+
+
+
+
 typedef CSCM_OBJECT *(*CSCM_EF_FUNC)(void *state, CSCM_OBJECT *env);
 
 
@@ -63,6 +69,7 @@ struct _CSCM_EF {
 	int type;
 
 	void *state;
+	CSCM_AST_NODE *exp;
 	CSCM_EF_FUNC f;
 };
 
@@ -80,7 +87,8 @@ typedef void (*CSCM_EF_FREE_FUNC)(CSCM_EF *ef);
 CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env);
 
 
-CSCM_EF *cscm_ef_construct(int type, void *state, CSCM_EF_FUNC f);
+CSCM_EF *cscm_ef_construct(int type, \
+			void *state, CSCM_AST_NODE *exp, CSCM_EF_FUNC f);
 
 
 CSCM_EF **cscm_ef_ptrs_create(size_t n);
@@ -91,13 +99,26 @@ void cscm_ef_free_tree(CSCM_EF *ef);
 
 
 
-#define CSCM_ERROR_EF_TYPE	"incorrect execution function type"
+void cscm_ef_backtrace_push(CSCM_AST_NODE *exp);
+CSCM_AST_NODE *cscm_ef_backtrace_pop();
+int cscm_ef_backtrace_is_empty();
 
 
-#define CSCM_ERROR_EF_BAD_FUNC	"bad function"
 
 
-#define CSCM_ERROR_EF_ZERO_PTR	"requesting zero pointer"
+#define CSCM_ERROR_EF_TYPE			"incorrect execution function type"
+
+
+#define CSCM_ERROR_EF_BAD_FUNC			"bad function"
+
+
+#define CSCM_ERROR_EF_ZERO_PTR			"requesting zero pointer"
+
+
+
+
+#define CSCM_ERROR_EF_BACKTRACE_FULL_STACK	"backtrace stack is full"
+#define CSCM_ERROR_EF_BACKTRACE_EMPTY_STACK	"backtrace stack is empty"
 
 
 

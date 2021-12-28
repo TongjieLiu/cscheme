@@ -196,6 +196,7 @@ CSCM_EF *cscm_analyze_definition(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_DEFINITION,	\
 				state,				\
+				exp,				\
 				_cscm_definition_ef);
 }
 

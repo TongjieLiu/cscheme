@@ -62,12 +62,6 @@ CSCM_OBJECT *cscm_eval(CSCM_AST_NODE *exp, CSCM_OBJECT *env)
 
 
 	#ifdef __CSCM_GC_DEBUG__
-		cscm_gc_show_total_object_count("FREE-AST");
-	#endif
-	cscm_ast_free_tree(exp);
-
-
-	#ifdef __CSCM_GC_DEBUG__
 		cscm_gc_show_total_object_count("EXECUTE");
 	#endif
 	ret = cscm_ef_exec(ef, env);
@@ -358,6 +352,7 @@ CSCM_EF *cscm_analyze_combination(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_COMBINATION,	\
 				state,				\
+				exp,				\
 				_cscm_combination_ef);
 }
 

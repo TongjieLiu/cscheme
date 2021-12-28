@@ -268,6 +268,7 @@ CSCM_EF *cscm_analyze_num_long(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_NUM_LONG,		\
 				number_obj,			\
+				NULL,				\
 				_cscm_num_long_ef);
 }
 
@@ -301,6 +302,7 @@ CSCM_EF *cscm_analyze_num_double(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_NUM_DOUBLE,	\
 				number_obj,			\
+				NULL,				\
 				_cscm_num_double_ef);
 }
 

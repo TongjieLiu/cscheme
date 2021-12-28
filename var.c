@@ -73,6 +73,7 @@ CSCM_EF *cscm_analyze_var(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_VAR,	\
 				name,			\
+				NULL,			\
 				_cscm_var_ef);
 }
 

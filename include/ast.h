@@ -118,6 +118,9 @@ CSCM_AST_NODE *cscm_ast_build(FILE *script, char *filename);
 CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename);
 
 
+void cscm_ast_print_tree(CSCM_AST_NODE *node);
+
+
 
 
 #define CSCM_ERROR_AST_NODE_TYPE		"Incorrect ast node type"

@@ -159,6 +159,7 @@ CSCM_EF *cscm_analyze_if(CSCM_AST_NODE *exp)
 
 	return cscm_ef_construct(CSCM_EF_TYPE_IF,	\
 			state,				\
+			exp,				\
 			_cscm_if_ef);
 }
 

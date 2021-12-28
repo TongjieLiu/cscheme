@@ -150,6 +150,7 @@ CSCM_EF *_do_cscm_analyze_quote(CSCM_AST_NODE *node)
 
 		return cscm_ef_construct(CSCM_EF_TYPE_QUOTE,	\
 					state,			\
+					NULL,			\
 					_cscm_quote_ef);
 	} else {
 		cscm_error_report("_do_cscm_analyze_quote", \

@@ -30,6 +30,7 @@
 #include "core.h"
 #include "ef.h"
 #include "env.h"
+#include "gc.h"
 #include "builtin.h"
 #include "builtin_seq.h"
 
@@ -1534,6 +1535,8 @@ CSCM_OBJECT *cscm_builtin_proc_min(size_t n, CSCM_OBJECT **args)
 CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args)
 {
 	CSCM_OBJECT *proc, *arg_list;
+
+	size_t len;
 	CSCM_OBJECT **arg_obj_ptrs;
 
 	CSCM_OBJECT *ret;
@@ -1558,11 +1561,15 @@ CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_OBJECT_TYPE);
 
 
+	len = cscm_list_get_len(arg_list);
 	arg_obj_ptrs = cscm_list_to_object_ptrs(arg_list);
 
-	ret = cscm_apply(proc,			\
-		cscm_list_get_len(arg_list),	\
-		arg_obj_ptrs);
+	/*	cscm_apply below will try to free proc, but when
+	 * cscm_builtin_proc_apply returns, the outside cscm_apply
+	 * will try to free it the second time */
+	cscm_gc_inc(proc);
+	ret = cscm_apply(proc, len, arg_obj_ptrs);
+	cscm_gc_dec(proc);
 
 	free(arg_obj_ptrs);
 

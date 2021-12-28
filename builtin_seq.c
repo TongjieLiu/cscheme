@@ -25,6 +25,7 @@
 #include "bool.h"
 #include "env.h"
 #include "proc.h"
+#include "gc.h"
 #include "builtin.h"
 #include "builtin_seq.h"
 
@@ -36,7 +37,7 @@ CSCM_OBJECT *_cscm_builtin_proc_sort_cmp_proc;
 
 int _cscm_builtin_proc_sort_cmp(const void *a, const void *b)
 {
-	CSCM_OBJECT *operator;
+	CSCM_OBJECT *proc;
 	CSCM_OBJECT *args[2];
 
 	CSCM_OBJECT *result;
@@ -45,10 +46,15 @@ int _cscm_builtin_proc_sort_cmp(const void *a, const void *b)
 	args[0] = *(CSCM_OBJECT **)a;
 	args[1] = *(CSCM_OBJECT **)b;
 
-	operator = _cscm_builtin_proc_sort_cmp_proc;
+	proc = _cscm_builtin_proc_sort_cmp_proc;
 
 
-	result = cscm_apply(operator, 2, args);
+	/*	cscm_apply below will try to free proc, but when
+	 * cscm_builtin_proc_sort returns, the outside cscm_apply
+	 * will try to free it the second time */
+	cscm_gc_inc(proc);
+	result = cscm_apply(proc, 2, args);
+	cscm_gc_dec(proc);
 
 	if (result->type != CSCM_OBJECT_TYPE_NUM_LONG)
 		cscm_error_report("cscm_builtin_proc_sort_cmp", \
@@ -343,6 +349,11 @@ CSCM_OBJECT *cscm_builtin_proc_map(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
 
+	/*	cscm_apply below will try to free proc every
+	 * iteration in the loop */
+	cscm_gc_inc(proc);
+
+
 	new_pair = cscm_pair_create();
 	ret = new_pair;
 
@@ -375,6 +386,7 @@ CSCM_OBJECT *cscm_builtin_proc_map(size_t n, CSCM_OBJECT **args)
 	cscm_pair_set_cdr(dest, CSCM_NIL);
 
 
+	cscm_gc_dec(proc);
 	return ret;
 }
 
@@ -410,6 +422,11 @@ CSCM_OBJECT *cscm_builtin_proc_for_each(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
 
+	/*	cscm_apply below will try to free action every
+	 * iteration in the loop */
+	cscm_gc_inc(action);
+
+
 	pair = seq;
 
 	do {
@@ -429,6 +446,7 @@ CSCM_OBJECT *cscm_builtin_proc_for_each(size_t n, CSCM_OBJECT **args)
 	} while (pair != CSCM_NIL);
 
 
+	cscm_gc_dec(action);
 	return NULL;
 }
 
@@ -467,6 +485,11 @@ CSCM_OBJECT *cscm_builtin_proc_filter(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
 
+	/*	cscm_apply below will try to free pred every
+	 * iteration in the loop */
+	cscm_gc_inc(pred);
+
+
 	new_pair = cscm_pair_create();
 	ret = new_pair;
 
@@ -499,8 +522,8 @@ CSCM_OBJECT *cscm_builtin_proc_filter(size_t n, CSCM_OBJECT **args)
 	cscm_pair_set_cdr(dest, CSCM_NIL);
 
 
+	cscm_gc_dec(pred);
 	return ret;
-
 }
 
 
@@ -525,7 +548,7 @@ CSCM_OBJECT *_do_cscm_builtin_proc_accumulate(CSCM_OBJECT *proc,	\
 
 
 	if (rest_seq == CSCM_NIL) {
-		return initial;
+		ret = initial;
 	} else {
 		proc_args[0] = cscm_pair_get_car(rest_seq);
 		proc_args[1] = _do_cscm_builtin_proc_accumulate(	\
@@ -533,8 +556,17 @@ CSCM_OBJECT *_do_cscm_builtin_proc_accumulate(CSCM_OBJECT *proc,	\
 						initial,		\
 						cscm_pair_get_cdr(rest_seq));
 
-		return cscm_apply(proc, 2, proc_args);
+
+		/*	cscm_apply below will try to free proc, but we
+	 	* we need it every time we call _do_cscm_builtin_proc_
+		* accumulate */
+		cscm_gc_inc(proc);
+		ret = cscm_apply(proc, 2, proc_args);
+		cscm_gc_dec(proc);
 	}
+
+
+	return ret;
 }
 
 
@@ -608,6 +640,11 @@ CSCM_OBJECT *cscm_builtin_proc_fold_left(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
 
+	/*	cscm_apply below will try to free proc every
+	 * iteration in the loop */
+	cscm_gc_inc(proc);
+
+
 	pair = seq;
 	last_result = initial;
 
@@ -630,6 +667,7 @@ CSCM_OBJECT *cscm_builtin_proc_fold_left(size_t n, CSCM_OBJECT **args)
 	} while (pair != CSCM_NIL);
 
 
+	cscm_gc_dec(proc);
 	return last_result;
 }
 

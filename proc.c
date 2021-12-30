@@ -138,8 +138,11 @@ CSCM_OBJECT *cscm_proc_comp_create()
 
 
 
-void cscm_proc_comp_set(CSCM_OBJECT *proc_obj, \
-		size_t n_params, char **params, CSCM_EF *body, CSCM_OBJECT *env)
+void cscm_proc_comp_set(CSCM_OBJECT *proc_obj,	\
+		int flag_dtn,			\
+		size_t n_params, char **params,	\
+		CSCM_EF *body,			\
+		CSCM_OBJECT *env)
 {
 	CSCM_PROC_COMP *proc;
 
@@ -153,7 +156,7 @@ void cscm_proc_comp_set(CSCM_OBJECT *proc_obj, \
 	else if (proc_obj->value == NULL)
 		cscm_error_report("cscm_proc_comp_set", \
 				CSCM_ERROR_EMPTY_OBJECT);
-	else if (params == NULL)
+	else if (n_params > 0 && params == NULL)
 		cscm_error_report("cscm_proc_comp_set", \
 				CSCM_ERROR_PROC_COMP_BAD_PARAMS);
 	else if (body == NULL)
@@ -170,6 +173,8 @@ void cscm_proc_comp_set(CSCM_OBJECT *proc_obj, \
 				CSCM_ERROR_PROC_COMP_NOT_INIT);
 
 
+	proc->flag_dtn = flag_dtn;
+
 	proc->n_params = n_params;
 	proc->params = params;
 
@@ -180,6 +185,29 @@ void cscm_proc_comp_set(CSCM_OBJECT *proc_obj, \
 }
 
 
+
+
+size_t cscm_proc_comp_get_flag_dtn(CSCM_OBJECT *proc_obj)
+{
+	CSCM_PROC_COMP *proc;
+
+
+	if (proc_obj == NULL)
+		cscm_error_report("cscm_proc_comp_get_flag_dtn", \
+				CSCM_ERROR_NULL_PTR);
+	else if (proc_obj->type != CSCM_OBJECT_TYPE_PROC_COMP)
+		cscm_error_report("cscm_proc_comp_get_flag_dtn", \
+				CSCM_ERROR_OBJECT_TYPE);
+	else if (proc_obj->value == NULL)
+		cscm_error_report("cscm_proc_comp_get_flag_dtn", \
+				CSCM_ERROR_EMPTY_OBJECT);
+
+
+	proc = (CSCM_PROC_COMP *)proc_obj->value;
+
+
+	return proc->flag_dtn;
+}
 
 
 size_t cscm_proc_comp_get_n_params(CSCM_OBJECT *proc_obj)

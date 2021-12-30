@@ -39,6 +39,9 @@
 #define CSCM_ERROR_LAMBDA_BAD_PARAM	\
 	"bad formal parameter in lambda expression"
 
+#define CSCM_ERROR_LAMBDA_BAD_DTN	\
+	"bad dotted-tail notation in lambda expression"
+
 
 
 
@@ -49,6 +52,8 @@
 
 
 struct _CSCM_LAMBDA_EF_STATE {
+	int flag_dtn; // dotted-tail notation
+
 	size_t n_params;
 	char **params;
 

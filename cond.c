@@ -68,7 +68,7 @@ int cscm_is_cond(CSCM_AST_NODE *exp)
 
 		predicate = cscm_ast_exp_index(clause, 0);
 
-		/* check whether the else clause is the last or not */
+		/* check if the else clause is the last clause */
 		if (cscm_ast_is_symbol(predicate)                        \
 			&& cscm_ast_symbol_text_equal(predicate, "else") \
 			&& i < (exp->n_childs - 1))

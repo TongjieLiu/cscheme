@@ -3200,4 +3200,6 @@ eval-load
 ; --- SECTION 6: Examples ---
 ; A. an interactive scheme compiler
 (make-eceval)
+(printn "a register-machine is created for running compiled programs")
+
 (compiler-start)

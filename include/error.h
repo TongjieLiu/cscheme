@@ -42,6 +42,10 @@ void cscm_runtime_error_report(char *object_name, char *msg);
 void cscm_libc_fail(char *pos, char *name);
 
 
+/* signal handling */
+void cscm_sigabrt_handler(int signum);
+
+
 
 
 #endif

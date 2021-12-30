@@ -63,31 +63,55 @@ int cscm_is_lambda(CSCM_AST_NODE *exp)
 				CSCM_ERROR_LAMBDA_NO_PARAM);
 
 	params = cscm_ast_exp_index(exp, 1);
-	if (!cscm_ast_is_exp(params))
-		cscm_syntax_error_report(params->filename,	\
-				params->line,			\
-				CSCM_ERROR_LAMBDA_BAD_PARAMS);
+	if (cscm_ast_is_symbol(params)) {
+		if (cscm_is_num_long(params)		\
+			|| cscm_is_num_double(params)	\
+			|| cscm_is_string(params))
+			cscm_syntax_error_report(params->filename,	\
+						params->line,		\
+						CSCM_ERROR_LAMBDA_BAD_PARAMS);
+		else if (!cscm_is_var(params))
+			cscm_syntax_error_report(params->filename,	\
+						params->line,		\
+						CSCM_ERROR_LAMBDA_BAD_PARAMS);
+	} else if (cscm_ast_is_exp(params)) {
+		/* support handling of no formal parameter */
+		for (i = 0; i < params->n_childs; i++) {
+			param = cscm_ast_exp_index(params, i);
+
+			if (cscm_is_num_long(param)		\
+				|| cscm_is_num_double(param)	\
+				|| cscm_is_string(param)) {
+				cscm_syntax_error_report(		\
+						param->filename,	\
+						param->line,		\
+						CSCM_ERROR_LAMBDA_BAD_PARAM);
+			} else if (!cscm_is_var(param)) {
+				cscm_syntax_error_report(		\
+						param->filename,	\
+						param->line,		\
+						CSCM_ERROR_LAMBDA_BAD_PARAM);
+			} else if (cscm_ast_symbol_text_equal(param, ".")) {
+				/*	Check if it is the second last formal
+				 * parameter even when params->n_childs = 1. */
+				if ((i + 2) != params->n_childs)
+					cscm_syntax_error_report(	\
+						param->filename,	\
+						param->line,		\
+						CSCM_ERROR_LAMBDA_BAD_DTN);
+			}
+		}
+	} else {
+		cscm_syntax_error_report(params->filename,		\
+					params->line,			\
+					CSCM_ERROR_LAMBDA_BAD_PARAMS);
+	}
+
 
 	if (exp->n_childs == 2) // do not support empty body
 		cscm_syntax_error_report(exp->filename,		\
 				exp->line,			\
 				CSCM_ERROR_LAMBDA_EMPTY_BODY);
-
-
-	for (i = 0; i < params->n_childs; i++) { // support no formal parameter
-		param = cscm_ast_exp_index(params, i);
-
-		if (cscm_is_num_long(param)		\
-			|| cscm_is_num_double(param)	\
-			|| cscm_is_string(param))
-			cscm_syntax_error_report(param->filename,	\
-					param->line,			\
-					CSCM_ERROR_LAMBDA_BAD_PARAM);
-		else if (!cscm_is_var(param))
-			cscm_syntax_error_report(param->filename,	\
-					param->line,			\
-					CSCM_ERROR_LAMBDA_BAD_PARAM);
-	}
 
 
 	return 1;
@@ -103,6 +127,8 @@ CSCM_LAMBDA_EF_STATE *_cscm_lambda_ef_state_create()
 	if (state == NULL)
 		cscm_libc_fail("_cscm_lambda_ef_state_create", "malloc");
 
+
+	state->flag_dtn = 0;
 
 	state->n_params = 0;
 	state->params = NULL;
@@ -125,6 +151,7 @@ CSCM_OBJECT *_cscm_lambda_ef(void *state, CSCM_OBJECT *env)
 
 	s = (CSCM_LAMBDA_EF_STATE *)state;
 	cscm_proc_comp_set(proc,	\
+			s->flag_dtn,	\
 			s->n_params,	\
 			s->params,	\
 			s->body,	\
@@ -149,15 +176,45 @@ CSCM_EF *cscm_analyze_lambda(CSCM_AST_NODE *exp)
 
 	params = cscm_ast_exp_index(exp, 1);
 
-	state->n_params = params->n_childs; 
+	if (cscm_ast_is_symbol(params)) {
+		state->n_params = 1; 
+		state->flag_dtn = 1;
 
-	state->params = malloc(params->n_childs * sizeof(char *));
-	if (state->params == NULL)
-		cscm_libc_fail("cscm_analyze_lambda", "malloc");
+		state->params = malloc(sizeof(char *));
+		if (state->params == NULL)
+			cscm_libc_fail("cscm_analyze_lambda", "malloc");
 
-	for (i = 0; i < params->n_childs; i++) {
-		param = cscm_ast_exp_index(params, i);
-		state->params[i] = cscm_text_cpy(param->text);
+		state->params[0] = cscm_text_cpy(params->text);
+	} else {
+		state->n_params = params->n_childs; 
+		state->flag_dtn = 0;
+
+		if (cscm_ast_is_exp_empty(params)) {
+			state->params = NULL;
+		} else {
+			state->params = malloc(params->n_childs * sizeof(char *));
+			if (state->params == NULL)
+				cscm_libc_fail("cscm_analyze_lambda", "malloc");
+
+			for (i = 0; i < params->n_childs; i++) {
+				param = cscm_ast_exp_index(params, i);
+
+				if (cscm_ast_symbol_text_equal(param, ".")) {
+					state->flag_dtn = 1;
+
+					param = cscm_ast_exp_index(params, \
+								i + 1);
+					state->params[i] = \
+						cscm_text_cpy(param->text);
+
+					state->n_params--; 
+					break;
+				} else {
+					state->params[i] = \
+						cscm_text_cpy(param->text);
+				}
+			}
+		}
 	}
 
 
@@ -199,7 +256,8 @@ void cscm_lambda_ef_free(CSCM_EF *ef)
 	for (i = 0; i < state->n_params; i++)
 		free(state->params[i]);
 
-	free(state->params);
+	if (state->params)
+		free(state->params);
 
 	cscm_ef_free_tree(state->body);
 

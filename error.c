@@ -33,10 +33,10 @@ void cscm_error_report(char *func, char *msg)
 	CSCM_AST_NODE *exp;
 
 
-	fprintf(stderr, "%s(): %s\n\n", func, msg);
+	fprintf(stderr, "%s(): %s\n", func, msg);
 
 	if (!cscm_ef_backtrace_is_empty())
-		puts("-------------------- BACKTRACE --------------------");
+		puts("\n-------------------- BACKTRACE --------------------");
 
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
@@ -67,10 +67,10 @@ void cscm_runtime_error_report(char *object_name, char *msg)
 	CSCM_AST_NODE *exp;
 
 
-	fprintf(stderr, "\"%s\": %s\n\n", object_name, msg);
+	fprintf(stderr, "\"%s\": %s\n", object_name, msg);
 
 	if (!cscm_ef_backtrace_is_empty())
-		puts("-------------------- BACKTRACE --------------------");
+		puts("\n-------------------- BACKTRACE --------------------");
 
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
@@ -93,10 +93,35 @@ void cscm_libc_fail(char *pos, char *name)
 	CSCM_AST_NODE *exp;
 
 
-	fprintf(stderr, "%s(): %s(): %s\n\n", pos, name, strerror(errno));
+	fprintf(stderr, "%s(): %s(): %s\n", pos, name, strerror(errno));
 
 	if (!cscm_ef_backtrace_is_empty())
-		puts("-------------------- BACKTRACE --------------------");
+		puts("\n-------------------- BACKTRACE --------------------");
+
+	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
+		exp = cscm_ef_backtrace_pop();
+
+		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		cscm_ast_print_tree(exp);
+		puts("");
+	}
+
+	exit(1);
+}
+
+
+
+
+void cscm_sigabrt_handler(int signum)
+{
+	int i;
+	CSCM_AST_NODE *exp;
+
+
+	puts("cscheme received a SIGABRT signal");
+
+	if (!cscm_ef_backtrace_is_empty())
+		puts("\n-------------------- BACKTRACE --------------------");
 
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();

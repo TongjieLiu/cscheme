@@ -57,7 +57,7 @@
 
 
 
-#define CSCM_EF_BACKTRACE_MAX_N		32
+#define CSCM_EF_BACKTRACE_MAX_N		1024
 
 
 

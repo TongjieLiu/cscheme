@@ -38,6 +38,7 @@
 #include "quasiquote.h"
 #include "gc.h"
 #include "env.h"
+#include "pair.h"
 #include "tco.h"
 #include "core.h"
 
@@ -139,7 +140,9 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 	CSCM_OBJECT *env;
 	size_t n_params;
 	char **params;
+	int flag_dtn;
 
+	CSCM_OBJECT *arg_buf;
 	CSCM_OBJECT *frame;
 
 
@@ -170,11 +173,25 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 		env = cscm_proc_comp_get_env(proc);
 		n_params = cscm_proc_comp_get_n_params(proc);
 		params = cscm_proc_comp_get_params(proc);
+		flag_dtn = cscm_proc_comp_get_flag_dtn(proc);
 
 
-		if (n_params != n_args)
-			cscm_error_report("cscm_apply", \
-					CSCM_ERROR_APPLY_N_ARGS);
+		if (flag_dtn) { // at least 1 formal parameter
+			if (n_args < (n_params - 1))
+				cscm_error_report("cscm_apply", \
+						CSCM_ERROR_APPLY_N_ARGS);
+
+			if (n_args == 0)
+				args = &arg_buf;
+
+			args[n_params - 1] = cscm_list_create(		\
+						n_args - n_params + 1,	\
+						&args[n_params - 1]);
+		} else {
+			if (n_args != n_params)
+				cscm_error_report("cscm_apply", \
+						CSCM_ERROR_APPLY_N_ARGS);
+		}
 
 
 		frame = cscm_frame_create();
@@ -309,6 +326,8 @@ CSCM_OBJECT *_cscm_combination_ef(void *state, CSCM_OBJECT *env)
 
 
 		ret = cscm_apply(proc, s->n_arg_efs, args);
+
+		free(args);
 	}
 
 
@@ -382,7 +401,8 @@ void cscm_combination_ef_free(CSCM_EF *ef)
 	for (i = 0; i < state->n_arg_efs; i++)
 		cscm_ef_free_tree(state->arg_efs[i]);
 
-	free(state->arg_efs);
+	if (state->n_arg_efs)
+		free(state->arg_efs);
 
 
 	free(state);

@@ -29,6 +29,7 @@
 #include "symbol.h"
 #include "ef.h"
 #include "gc.h"
+#include "signal.h"
 #include "cscheme.h"
 
 
@@ -284,6 +285,8 @@ int main(int argc, char *argv[])
 	CSCM_OBJECT **objs;
 	CSCM_OBJECT *internal_argc, *internal_argv;
 
+	struct sigaction sigaction_abrt;
+
 	CSCM_AST_NODE *exp;
 
 	CSCM_OBJECT *global_env;
@@ -350,6 +353,12 @@ int main(int argc, char *argv[])
 
 		free(objs);
 	}
+
+
+	sigaction_abrt.sa_handler = cscm_sigabrt_handler;
+	sigemptyset(&sigaction_abrt.sa_mask);
+	sigaction_abrt.sa_flags = 0;
+	sigaction(SIGABRT, &sigaction_abrt, NULL);
 
 
 	#ifdef __CSCM_GC_DEBUG__

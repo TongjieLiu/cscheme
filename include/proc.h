@@ -44,6 +44,8 @@ typedef struct _CSCM_PROC_PRIM CSCM_PROC_PRIM;
 
 
 struct _CSCM_PROC_COMP {
+	int flag_dtn; // dotted-tail notation
+
 	size_t n_params;
 	char **params; // formal parameters
 
@@ -89,11 +91,13 @@ CSCM_OBJECT *cscm_proc_comp_create();
 
 
 void cscm_proc_comp_set(CSCM_OBJECT *proc_obj,	\
+		int flag_dtn,			\
 		size_t n_params, char **params,	\
 		CSCM_EF *body,			\
 		CSCM_OBJECT *env);
 
 
+size_t cscm_proc_comp_get_flag_dtn(CSCM_OBJECT *proc_obj);
 size_t cscm_proc_comp_get_n_params(CSCM_OBJECT *proc_obj);
 char **cscm_proc_comp_get_params(CSCM_OBJECT *proc_obj);
 CSCM_EF *cscm_proc_comp_get_body(CSCM_OBJECT *proc_obj);

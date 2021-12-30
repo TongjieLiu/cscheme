@@ -29,7 +29,7 @@
 
 
 
-#define CSCM_FRAME_MAX_SIZE	1024
+#define CSCM_FRAME_MAX_SIZE	512
 
 
 

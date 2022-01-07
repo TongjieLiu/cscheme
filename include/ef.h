@@ -102,6 +102,8 @@ void cscm_ef_free_tree(CSCM_EF *ef);
 void cscm_ef_backtrace_push(CSCM_AST_NODE *exp);
 CSCM_AST_NODE *cscm_ef_backtrace_pop();
 int cscm_ef_backtrace_is_empty();
+void cscm_ef_backtrace_backup();
+void cscm_ef_backtrace_restore();
 
 
 
@@ -119,6 +121,8 @@ int cscm_ef_backtrace_is_empty();
 
 #define CSCM_ERROR_EF_BACKTRACE_FULL_STACK	"backtrace stack is full"
 #define CSCM_ERROR_EF_BACKTRACE_EMPTY_STACK	"backtrace stack is empty"
+#define CSCM_ERROR_EF_BACKTRACE_BACKUPED	"backtrace stack has already been backuped"
+#define CSCM_ERROR_EF_BACKTRACE_NOT_BACKUPED	"backtrace stack has not been backuped"
 
 
 

@@ -144,7 +144,9 @@ CSCM_OBJECT *cscm_global_env_get();
 
 
 void cscm_frame_print(CSCM_OBJECT *obj, FILE *stream);
+void cscm_frame_print_details(CSCM_OBJECT *obj, char *prefix);
 void cscm_env_print(CSCM_OBJECT *obj, FILE *stream);
+void cscm_env_print_details(CSCM_OBJECT *obj);
 void cscm_unassigned_print(CSCM_OBJECT *obj, FILE *stream);
 
 

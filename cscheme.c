@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +30,8 @@
 #include "symbol.h"
 #include "ef.h"
 #include "gc.h"
-#include "signal.h"
+#include "debug.h"
+#include "text.h"
 #include "cscheme.h"
 
 
@@ -45,7 +47,8 @@
 #define CSCM_USAGE_MSG \
 "cscheme [options] file ...\n"					\
 "options: -h\n"							\
-"         --builtins\n"						\
+"         --docs\n"						\
+"         --debug\n"						\
 "file: SCRIPT\n"						\
 "      -(STDIN)\n"						\
 "\nThere can be arguments for the script after \"file\"."
@@ -281,8 +284,9 @@ int main(int argc, char *argv[])
 	FILE *script;
 	char *script_name;
 
-	CSCM_OBJECT *symbol, *pair;
-	CSCM_OBJECT **objs;
+	char *option;
+	CSCM_OBJECT *option_obj;
+	CSCM_OBJECT **option_objs;
 	CSCM_OBJECT *internal_argc, *internal_argv;
 
 	struct sigaction sigaction_abrt;
@@ -297,6 +301,7 @@ int main(int argc, char *argv[])
 	#ifdef __CSCM_GC_DEBUG__
 		cscm_gc_show_total_object_count("HANDLE-CLI-OPTIONS");
 	#endif
+
 	if (argc == 1 || !strcmp(argv[1], "-")) {
 		if (argc > 2)
 			cscm_error_report("main", \
@@ -309,11 +314,11 @@ int main(int argc, char *argv[])
 		internal_argc = cscm_num_long_create();
 		cscm_num_long_set(internal_argc, 1);
 
-		symbol = cscm_symbol_create();
-		cscm_symbol_set(symbol, "-");
+		option_obj = cscm_symbol_create();
+		cscm_symbol_set(option_obj, "-");
 
 		internal_argv = cscm_pair_create();
-		cscm_pair_set(internal_argv, symbol, CSCM_NIL);
+		cscm_pair_set(internal_argv, option_obj, CSCM_NIL);
 	} else if (!strcmp(argv[1], "-h")) {
 		if (argc > 2)
 			cscm_error_report("main", \
@@ -330,6 +335,46 @@ int main(int argc, char *argv[])
 		cscm_print_docs();
 
 		return 0;
+	} else if (!strcmp(argv[1], "--debug")) {
+		if (argc < 3)
+			cscm_error_report("main", \
+					CSCM_ERROR_CSCHEME_ARGC);
+
+
+		cscm_debug_mode = 1;
+
+
+		script = fopen(argv[2], "r");
+		if (script == NULL)
+			cscm_libc_fail("main", "fopen");
+	
+		script_name = argv[2];
+
+
+		internal_argc = cscm_num_long_create();
+		cscm_num_long_set(internal_argc, argc - 2);
+
+		option_objs = cscm_object_ptrs_create(argc - 2);
+		for (i = 2; i < argc; i++) {
+			option = argv[i];
+
+			if (cscm_text_is_integer(option)) {
+				option_obj = cscm_num_long_create();
+				cscm_num_long_set(option_obj, atol(option));
+			} else if (cscm_text_is_fpn(option)) {
+				option_obj = cscm_num_double_create();
+				cscm_num_double_set(option_obj, atof(option));
+			} else {
+				option_obj = cscm_symbol_create();
+				cscm_symbol_set(option_obj, option);
+			}
+
+			option_objs[i - 2] = option_obj;
+		}
+
+		internal_argv = cscm_list_create(argc - 2, option_objs);
+
+		free(option_objs);
 	} else {
 		script = fopen(argv[1], "r");
 		if (script == NULL)
@@ -341,17 +386,27 @@ int main(int argc, char *argv[])
 		internal_argc = cscm_num_long_create();
 		cscm_num_long_set(internal_argc, argc - 1);
 
-		objs = cscm_object_ptrs_create(argc - 1);
+		option_objs = cscm_object_ptrs_create(argc - 1);
 		for (i = 1; i < argc; i++) {
-			symbol = cscm_symbol_create();
-			cscm_symbol_set(symbol, argv[i]);
+			option = argv[i];
 
-			objs[i - 1] = symbol;
+			if (cscm_text_is_integer(option)) {
+				option_obj = cscm_num_long_create();
+				cscm_num_long_set(option_obj, atol(option));
+			} else if (cscm_text_is_fpn(option)) {
+				option_obj = cscm_num_double_create();
+				cscm_num_double_set(option_obj, atof(option));
+			} else {
+				option_obj = cscm_symbol_create();
+				cscm_symbol_set(option_obj, option);
+			}
+
+			option_objs[i - 1] = option_obj;
 		}
 
-		internal_argv = cscm_list_create(argc - 1, objs);
+		internal_argv = cscm_list_create(argc - 1, option_objs);
 
-		free(objs);
+		free(option_objs);
 	}
 
 

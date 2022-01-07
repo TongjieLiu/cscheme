@@ -685,6 +685,27 @@ void cscm_frame_print(CSCM_OBJECT *obj, FILE *stream)
 }
 
 
+void cscm_frame_print_details(CSCM_OBJECT *obj, char *prefix)
+{
+	int i;
+	CSCM_FRAME *frame;
+
+
+	if (obj == NULL || prefix == NULL)
+		cscm_error_report("cscm_frame_print_details", \
+				CSCM_ERROR_NULL_PTR);
+	else if (obj->type != CSCM_OBJECT_TYPE_FRAME)
+		cscm_error_report("cscm_frame_print_details", \
+				CSCM_ERROR_OBJECT_TYPE);
+
+
+	frame = (CSCM_FRAME *)obj->value;
+	for (i = 0; i < frame->n_bindings; i++) {
+		printf("%s%-16s: ", prefix, frame->vars[i]);
+		cscm_object_print(frame->vals[i], stdout);
+		puts("");
+	}
+}
 
 
 void cscm_env_print(CSCM_OBJECT *obj, FILE *stream)
@@ -701,6 +722,29 @@ void cscm_env_print(CSCM_OBJECT *obj, FILE *stream)
 }
 
 
+void cscm_env_print_details(CSCM_OBJECT *obj)
+{
+	int i;
+	CSCM_ENV *env;
+
+
+	if (obj == NULL)
+		cscm_error_report("cscm_env_print_details", \
+				CSCM_ERROR_NULL_PTR);
+	else if (obj->type != CSCM_OBJECT_TYPE_ENV)
+		cscm_error_report("cscm_env_print_details", \
+				CSCM_ERROR_OBJECT_TYPE);
+
+
+	env = (CSCM_ENV *)obj->value;
+	for (i = 0; i < env->n_frames; i++) {
+		if (i > 0)
+			puts("");
+
+		printf("FRAME %d:\n", i);
+		cscm_frame_print_details(env->frames[i], "\t");
+	}
+}
 
 
 void cscm_unassigned_print(CSCM_OBJECT *obj, FILE *stream)

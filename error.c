@@ -41,7 +41,10 @@ void cscm_error_report(char *func, char *msg)
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
 
-		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		printf("[%d] %s:%lu ",			\
+			i,				\
+			exp->filename,			\
+			(unsigned long)exp->line);
 		cscm_ast_print_tree(exp);
 		puts("");
 	}
@@ -75,7 +78,10 @@ void cscm_runtime_error_report(char *object_name, char *msg)
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
 
-		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		printf("[%d] %s:%lu ",			\
+			i,				\
+			exp->filename,			\
+			(unsigned long)exp->line);
 		cscm_ast_print_tree(exp);
 		puts("");
 	}
@@ -101,7 +107,10 @@ void cscm_libc_fail(char *pos, char *name)
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
 
-		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		printf("[%d] %s:%lu ",			\
+			i,				\
+			exp->filename,			\
+			(unsigned long)exp->line);
 		cscm_ast_print_tree(exp);
 		puts("");
 	}
@@ -126,7 +135,10 @@ void cscm_sigabrt_handler(int signum)
 	for (i = 0; !cscm_ef_backtrace_is_empty(); i++) {
 		exp = cscm_ef_backtrace_pop();
 
-		printf("[%d] %s:%lu ", i, exp->filename, (unsigned long)exp->line);
+		printf("[%d] %s:%lu ",			\
+			i,				\
+			exp->filename,			\
+			(unsigned long)exp->line);
 		cscm_ast_print_tree(exp);
 		puts("");
 	}

@@ -160,8 +160,12 @@ CSCM_OBJECT *_cscm_definition_ef(void *state, CSCM_OBJECT *env)
 
 CSCM_EF *cscm_analyze_definition(CSCM_AST_NODE *exp)
 {
+	int i;
+
 	CSCM_AST_NODE *var, *val;
 	CSCM_AST_NODE *proc, *head;
+
+	CSCM_AST_NODE *lambda, *new_lambda_exp, *new_var;
 
 	char *var_text;
 	CSCM_EF *val_ef;
@@ -172,15 +176,28 @@ CSCM_EF *cscm_analyze_definition(CSCM_AST_NODE *exp)
 
 	if (cscm_ast_is_exp(var)) {	// define a new compound procedure
 		proc = cscm_ast_exp_index(var, 0);
-		var_text = cscm_text_cpy(proc->text);
-
+		new_var = cscm_ast_symbol_create("transformation", 0);
+		cscm_ast_symbol_set(new_var, proc->text);
 		cscm_ast_exp_drop_first(var);
 
+		lambda = cscm_ast_symbol_create("transformation", 0);
+		cscm_ast_symbol_set(lambda, "lambda");
+
+		new_lambda_exp = cscm_ast_exp_create("transformation", 0);
+		cscm_ast_exp_append(new_lambda_exp, lambda);
+		for (i = 1; i < exp->n_childs; i++)
+			cscm_ast_exp_append(new_lambda_exp, \
+					cscm_ast_exp_index(exp, i));
+
 		head = cscm_ast_exp_index(exp, 0);
-		cscm_ast_symbol_set(head, "lambda");
+		cscm_ast_exp_empty(exp);
+		cscm_ast_exp_append(exp, head);
+		cscm_ast_exp_append(exp, new_var);
+		cscm_ast_exp_append(exp, new_lambda_exp);
 
 		/* Now, exp represents a lambda expression */
-		val_ef = cscm_analyze_lambda(exp);
+		val_ef = cscm_analyze_lambda(new_lambda_exp);
+		var_text = cscm_text_cpy(new_var->text);
 	} else {			// define a new variable
 		var_text = cscm_text_cpy(var->text);
 

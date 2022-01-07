@@ -35,6 +35,7 @@
 #include "quote.h"
 #include "quasiquote.h"
 #include "ast.h"
+#include "debug.h"
 #include "ef.h"
 
 
@@ -79,10 +80,16 @@ CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env)
 		cscm_error_report("cscm_ef_exec", \
 				CSCM_ERROR_OBJECT_TYPE);
 
-	if (ef->exp)
+	if (ef->exp) {
+		if (cscm_debug_mode)
+			cscm_debug_shell_start(ef, env);
+
 		cscm_ef_backtrace_push(ef->exp);
+	}
+
 
 	ret =  ef->f(ef->state, env);
+
 
 	if (ef->exp)
 		cscm_ef_backtrace_pop();
@@ -193,8 +200,11 @@ void cscm_ef_free_tree(CSCM_EF *ef)
 
 
 
+int _cscm_ef_backtrace_flag_backuped = 0;
 size_t _cscm_ef_backtrace_count = 0;
+size_t _cscm_ef_backtrace_count_backup = 0;
 CSCM_AST_NODE *_cscm_ef_backtrace_stack[CSCM_EF_BACKTRACE_MAX_N];
+CSCM_AST_NODE *_cscm_ef_backtrace_stack_backup[CSCM_EF_BACKTRACE_MAX_N];
 
 
 void cscm_ef_backtrace_push(CSCM_AST_NODE *exp)
@@ -227,4 +237,42 @@ CSCM_AST_NODE *cscm_ef_backtrace_pop()
 int cscm_ef_backtrace_is_empty()
 {
 	return _cscm_ef_backtrace_count == 0 ? 1 : 0;
+}
+
+
+void cscm_ef_backtrace_backup()
+{
+	int i;
+
+
+	if (_cscm_ef_backtrace_flag_backuped)
+		cscm_error_report("cscm_ef_backtrace_backup", \
+				CSCM_ERROR_EF_BACKTRACE_BACKUPED);
+
+
+	_cscm_ef_backtrace_count_backup = _cscm_ef_backtrace_count;
+	for (i = 0; i < _cscm_ef_backtrace_count; i++)
+		_cscm_ef_backtrace_stack_backup[i] = \
+						_cscm_ef_backtrace_stack[i];
+
+	_cscm_ef_backtrace_flag_backuped = 1;
+}
+
+
+void cscm_ef_backtrace_restore()
+{
+	int i;
+
+
+	if (!_cscm_ef_backtrace_flag_backuped)
+		cscm_error_report("cscm_ef_backtrace_restore", \
+				CSCM_ERROR_EF_BACKTRACE_NOT_BACKUPED);
+
+
+	_cscm_ef_backtrace_count = _cscm_ef_backtrace_count_backup;
+	for (i = 0; i < _cscm_ef_backtrace_count_backup; i++)
+		_cscm_ef_backtrace_stack[i] = \
+					_cscm_ef_backtrace_stack_backup[i];
+
+	_cscm_ef_backtrace_flag_backuped = 0;
 }

@@ -1,6 +1,6 @@
 /* ef.h -- execution function
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ typedef void (*CSCM_EF_FREE_FUNC)(CSCM_EF *ef);
 
 
 
+size_t cscm_ef_get_number();
 CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env);
 
 
@@ -111,6 +112,7 @@ void cscm_ef_backtrace_restore();
 #define CSCM_ERROR_EF_TYPE			"incorrect execution function type"
 
 
+#define CSCM_ERROR_EF_BAD_ENV			"bad environment"
 #define CSCM_ERROR_EF_BAD_FUNC			"bad function"
 
 

@@ -1,6 +1,6 @@
 /* debug.h -- cscheme debug mode
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -83,7 +83,11 @@ void cscm_debug_shell_start(CSCM_EF *ef, CSCM_OBJECT *env);
 
 
 
-#define CSCM_ERROR_DEBUG_CMD_NEXT_TIMES		"incorrect times"
+#define CSCM_ERROR_DEBUG_CMD_NEXT_NOT_TIMES	"bad times"
+#define CSCM_ERROR_DEBUG_CMD_NEXT_NEG_TIMES	"negative times"
+
+
+#define CSCM_ERROR_DEBUG_CMD_FRAME_INDEX	"bad index"
 
 
 

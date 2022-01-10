@@ -1,6 +1,6 @@
 /* logical.c -- scheme logical composition operations(special form)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "ef.h"
 #include "core.h"
 #include "bool.h"
+#include "gc.h"
 #include "logical.h"
 
 
@@ -83,7 +84,7 @@ CSCM_AO_EF_STATE *_cscm_ao_ef_state_create()
 
 CSCM_OBJECT *_cscm_and_ef(void *state, CSCM_OBJECT *env)
 {
-	int i;
+	int i, end;
 	CSCM_EF *ef;
 	CSCM_OBJECT *result;
 
@@ -92,15 +93,22 @@ CSCM_OBJECT *_cscm_and_ef(void *state, CSCM_OBJECT *env)
 
 	s = (CSCM_AO_EF_STATE *)state;
 
-	for (i = 0; i < s->n_clause_efs; i++) {
+	end = s->n_clause_efs - 1;
+	for (i = 0; i < end; i++) {
 		ef = s->clause_efs[i];
-
 		result = cscm_ef_exec(ef, env);
 
-		if (result == CSCM_FALSE)
+		if (result == CSCM_FALSE) {
 			return CSCM_FALSE;
+		} else {
+			if (result)
+				cscm_gc_free(result);
+		}
 	}
 
+
+	ef = s->clause_efs[i];
+	result = cscm_ef_exec(ef, env);
 
 	return result; // result of the last clause
 }
@@ -119,7 +127,6 @@ CSCM_OBJECT *_cscm_or_ef(void *state, CSCM_OBJECT *env)
 
 	for (i = 0; i < s->n_clause_efs; i++) {
 		ef = s->clause_efs[i];
-
 		result = cscm_ef_exec(ef, env);
 
 		if (result != CSCM_FALSE)

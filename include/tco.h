@@ -1,6 +1,6 @@
 /* tco.h -- tail-call optimization
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,11 @@
 #ifndef __CSCM_TCO_H__
 
 #define __CSCM_TCO_H__
+
+
+
+
+#include "ast.h"
 
 
 
@@ -47,11 +52,14 @@ int cscm_tco_get_flag(unsigned char flag);
 
 
 
-void cscm_tco_state_save(CSCM_OBJECT *new_env, CSCM_EF *new_body_ef);
+void cscm_tco_state_save(CSCM_OBJECT *new_env,	\
+			CSCM_EF *new_body_ef,	\
+			CSCM_AST_NODE *new_exp);
 
 
-CSCM_OBJECT *cscm_tco_state_get_new_env();
-CSCM_EF *cscm_tco_state_get_new_body_ef();
+void cscm_tco_state_get(CSCM_OBJECT **new_env_ptr,	\
+			CSCM_EF **new_body_ef_ptr,	\
+			CSCM_AST_NODE **new_exp_ptr);
 
 
 

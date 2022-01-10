@@ -1,6 +1,6 @@
 /* ast.c -- Abstract Syntax Tree
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -910,23 +910,32 @@ CSCM_AST_NODE *cscm_ast_build(FILE *script, char *filename)
 /* only read and parse the first list in the file */
 CSCM_AST_NODE *cscm_list_ast_build(FILE *file, char *filename)
 {
-	CSCM_AST_NODE *exp, *ret;
+	CSCM_AST_NODE *exp;
+	CSCM_AST_NODE *symbol;
 
 
 	exp = cscm_ast_exp_create(filename, 1);
 	_do_cscm_ast_build(file, exp, 0, CSCM_AST_NOT_READ_AHEAD);
 
 
-	if (exp->n_childs != 1)
+	if (exp->n_childs == 0) { // return (list)
+		symbol = cscm_ast_symbol_create(filename, 1);
+		cscm_ast_symbol_set(symbol, "list");
+
+		cscm_ast_exp_append(exp, symbol);
+
+		return exp;
+	} else if (exp->n_childs == 1) { // return (quote old-exp)
+		symbol = cscm_ast_symbol_create(filename, 1);
+		cscm_ast_symbol_set(symbol, "quote");
+
+		cscm_ast_exp_insert_first(exp, symbol);
+
+		return exp;
+	} else {
 		cscm_error_report("cscm_list_ast_build", \
 				CSCM_ERROR_LIST_AST_N_EXPS);
-
-	ret = cscm_ast_exp_index(exp, 0);
-
-	cscm_ast_free_exp(exp);
-
-
-	return ret;
+	}
 }
 
 

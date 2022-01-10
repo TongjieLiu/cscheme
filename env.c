@@ -1,6 +1,6 @@
 /* env.c -- environment
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -526,6 +526,7 @@ char *_cscm_env_builtin_names[] = {
 	"include",
 	"max", "min",
 	"apply", "not",
+	"error",
 
 	NULL
 };
@@ -601,6 +602,8 @@ CSCM_PROC_PRIM_FUNC _cscm_env_builtin_pp_funcs[] = {
 
 	cscm_builtin_proc_apply,
 	cscm_builtin_proc_not,
+
+	cscm_builtin_proc_error,
 
 	NULL
 };

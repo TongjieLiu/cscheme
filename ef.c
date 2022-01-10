@@ -1,6 +1,6 @@
 /* ef.c -- execution function
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -68,6 +68,15 @@ void _cscm_ef_dec_total_count()
 
 
 
+size_t _cscm_ef_number = 0;
+
+
+size_t cscm_ef_get_number()
+{
+	return _cscm_ef_number;
+}
+
+
 CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env)
 {
 	CSCM_OBJECT *ret;
@@ -78,9 +87,11 @@ CSCM_OBJECT *cscm_ef_exec(CSCM_EF *ef, CSCM_OBJECT *env)
 				CSCM_ERROR_NULL_PTR);
 	else if (env->type != CSCM_OBJECT_TYPE_ENV)
 		cscm_error_report("cscm_ef_exec", \
-				CSCM_ERROR_OBJECT_TYPE);
+				CSCM_ERROR_EF_BAD_ENV);
 
 	if (ef->exp) {
+		_cscm_ef_number++;
+
 		if (cscm_debug_mode)
 			cscm_debug_shell_start(ef, env);
 

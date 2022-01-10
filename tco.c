@@ -1,6 +1,6 @@
 /* tco.c -- tail-call optimization
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "error.h"
 #include "ef.h"
 #include "object.h"
+#include "ast.h"
 #include "tco.h"
 
 
@@ -78,11 +79,14 @@ int cscm_tco_get_flag(unsigned char flag)
 
 CSCM_OBJECT *_cscm_tco_state_new_env = NULL;
 CSCM_EF *_cscm_tco_state_new_body_ef = NULL;
+CSCM_AST_NODE *_cscm_tco_state_new_exp = NULL;
 
 
-void cscm_tco_state_save(CSCM_OBJECT *new_env, CSCM_EF *new_body_ef)
+void cscm_tco_state_save(CSCM_OBJECT *new_env,	\
+			CSCM_EF *new_body_ef,	\
+			CSCM_AST_NODE *new_exp)
 {
-	if (new_env == NULL || new_body_ef == NULL)
+	if (new_env == NULL || new_body_ef == NULL || new_exp == NULL)
 		cscm_error_report("cscm_tco_state_save", \
 				CSCM_ERROR_NULL_PTR);
 	else if (!cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW))
@@ -95,6 +99,7 @@ void cscm_tco_state_save(CSCM_OBJECT *new_env, CSCM_EF *new_body_ef)
 
 	_cscm_tco_state_new_env = new_env;
 	_cscm_tco_state_new_body_ef = new_body_ef;
+	_cscm_tco_state_new_exp = new_exp;
 
 	cscm_tco_set_flag(CSCM_TCO_FLAG_STATE_SAVED);
 }
@@ -102,23 +107,21 @@ void cscm_tco_state_save(CSCM_OBJECT *new_env, CSCM_EF *new_body_ef)
 
 
 
-CSCM_OBJECT *cscm_tco_state_get_new_env()
+void cscm_tco_state_get(CSCM_OBJECT **new_env_ptr,	\
+			CSCM_EF **new_body_ef_ptr,	\
+			CSCM_AST_NODE **new_exp_ptr)
 {
-	if (!cscm_tco_get_flag(CSCM_TCO_FLAG_STATE_SAVED))
-		cscm_error_report("cscm_tco_state_get_new_env", \
+	if (new_env_ptr == NULL			\
+		|| new_body_ef_ptr == NULL	\
+		|| new_exp_ptr == NULL)
+		cscm_error_report("cscm_tco_state_get", \
+				CSCM_ERROR_NULL_PTR);
+	else if (!cscm_tco_get_flag(CSCM_TCO_FLAG_STATE_SAVED))
+		cscm_error_report("cscm_tco_state_get", \
 				CSCM_ERROR_TCO_STATE_NOT_SAVED);
 
 
-	return _cscm_tco_state_new_env;
-}
-
-
-CSCM_EF *cscm_tco_state_get_new_body_ef()
-{
-	if (!cscm_tco_get_flag(CSCM_TCO_FLAG_STATE_SAVED))
-		cscm_error_report("cscm_tco_state_get_new_body_ef", \
-				CSCM_ERROR_TCO_STATE_NOT_SAVED);
-
-
-	return _cscm_tco_state_new_body_ef;
+	*new_env_ptr = _cscm_tco_state_new_env;
+	*new_body_ef_ptr = _cscm_tco_state_new_body_ef;
+	*new_exp_ptr = _cscm_tco_state_new_exp;
 }

@@ -1,6 +1,6 @@
 /* begin.c -- scheme begin expression(special form)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -122,8 +122,9 @@ CSCM_OBJECT *_cscm_seq_ef(void *state, CSCM_OBJECT *env)
 	if (flag_tco_allow) // restore the original value of the flag
 		cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 
-	if (last_clause_ef->type != CSCM_EF_TYPE_COMBINATION \
-		&& last_clause_ef->type != CSCM_EF_TYPE_IF)
+	if (last_clause_ef->type != CSCM_EF_TYPE_COMBINATION	\
+		&& last_clause_ef->type != CSCM_EF_TYPE_IF	\
+		&& last_clause_ef->type != CSCM_EF_TYPE_SEQ)
 		cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 
@@ -139,6 +140,8 @@ CSCM_EF *cscm_analyze_seq(CSCM_AST_NODE *exp)
 	int i;
 	CSCM_EF **clause_efs;
 	CSCM_SEQ_EF_STATE *state;
+
+	CSCM_AST_NODE *begin;
 
 
 	if (exp == NULL)
@@ -165,6 +168,13 @@ CSCM_EF *cscm_analyze_seq(CSCM_AST_NODE *exp)
 
 	state->n_clause_efs = exp->n_childs;
 	state->clause_efs = clause_efs;
+
+
+	/* restore the keyword begin */
+	begin = cscm_ast_symbol_create("<transformation>", 0);
+	cscm_ast_symbol_set(begin, "begin");
+
+	cscm_ast_exp_insert_first(exp, begin);
 
 
 	return cscm_ef_construct(CSCM_EF_TYPE_SEQ,	\

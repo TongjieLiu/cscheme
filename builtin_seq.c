@@ -1,6 +1,6 @@
 /* builtin_seq.c -- cscheme standard library module: seq
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -91,19 +91,20 @@ CSCM_OBJECT *cscm_builtin_proc_sort(size_t n, CSCM_OBJECT **args)
 		&& (cmp_proc->type != CSCM_OBJECT_TYPE_PROC_COMP))
 		cscm_error_report("cscm_builtin_proc_sort", \
 				CSCM_ERROR_BUILTIN_BAD_PROC);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_sort", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
 
-	len = cscm_list_get_len(seq);
-	if (len == 0)
+	if (seq == CSCM_NIL)
 		return CSCM_NIL;
 
 
+	len = cscm_list_get_len(seq);
 	objs = cscm_list_to_object_ptrs(seq);
-
 	_cscm_builtin_proc_sort_cmp_proc = cmp_proc;
+
 	qsort(objs,				\
 		len,				\
 		sizeof(CSCM_OBJECT *),		\
@@ -136,7 +137,8 @@ CSCM_OBJECT *cscm_builtin_proc_length(size_t n, CSCM_OBJECT **args)
 
 	seq = args[0];
 
-	if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_length", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
@@ -172,7 +174,7 @@ CSCM_OBJECT *cscm_builtin_proc_list_ref(size_t n, CSCM_OBJECT **args)
 	if (index->type != CSCM_OBJECT_TYPE_NUM_LONG)
 		cscm_error_report("cscm_builtin_proc_list_ref", \
 				CSCM_ERROR_LIST_INDEX);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR) // do not support nil
 		cscm_error_report("cscm_builtin_proc_list_ref", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
@@ -181,7 +183,6 @@ CSCM_OBJECT *cscm_builtin_proc_list_ref(size_t n, CSCM_OBJECT **args)
 	if (index_number < 0)
 		cscm_error_report("cscm_builtin_proc_list_ref", \
 				CSCM_ERROR_LIST_INDEX);
-
 
 	return cscm_list_index(seq, (size_t)index_number);
 }
@@ -253,8 +254,11 @@ CSCM_OBJECT *cscm_builtin_proc_append(size_t n, CSCM_OBJECT **args)
 	y = args[1];
 
 
-	if (x->type != CSCM_OBJECT_TYPE_PAIR \
-		|| y->type != CSCM_OBJECT_TYPE_PAIR)
+	if ((x->type != CSCM_OBJECT_TYPE_PAIR		\
+		&& x != CSCM_NIL)			\
+		||					\
+		(y->type != CSCM_OBJECT_TYPE_PAIR	\
+		&& y != CSCM_NIL))
 		cscm_error_report("cscm_builtin_proc_append", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
@@ -280,7 +284,8 @@ CSCM_OBJECT *cscm_builtin_proc_reverse(size_t n, CSCM_OBJECT **args)
 	seq = args[0];
 
 
-	if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_reverse", \
 				CSCM_ERROR_OBJECT_TYPE);
 
@@ -297,7 +302,7 @@ CSCM_OBJECT *cscm_builtin_proc_list_copy(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *seq;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_copy",	\
+	cscm_builtin_check_args("cscm_builtin_proc_copy",	\
 				1,				\
 				n,				\
 				args);
@@ -306,7 +311,8 @@ CSCM_OBJECT *cscm_builtin_proc_list_copy(size_t n, CSCM_OBJECT **args)
 	seq = args[0];
 
 
-	if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_list_copy", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
@@ -330,7 +336,7 @@ CSCM_OBJECT *cscm_builtin_proc_map(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *item_result;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_map",	\
+	cscm_builtin_check_args("cscm_builtin_proc_map",	\
 				2,				\
 				n,				\
 				args);
@@ -344,9 +350,14 @@ CSCM_OBJECT *cscm_builtin_proc_map(size_t n, CSCM_OBJECT **args)
 		&& proc->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_map", \
 				CSCM_ERROR_BUILTIN_BAD_PROC);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_map", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
+
+
+	if (seq == CSCM_NIL)
+		return CSCM_NIL;
 
 
 	/*	cscm_apply below will try to free proc every
@@ -403,9 +414,9 @@ CSCM_OBJECT *cscm_builtin_proc_for_each(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *action_args[1];
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_for_each",	\
-				2,					\
-				n,					\
+	cscm_builtin_check_args("cscm_builtin_proc_for_each",	\
+				2,				\
+				n,				\
 				args);
 
 
@@ -417,9 +428,14 @@ CSCM_OBJECT *cscm_builtin_proc_for_each(size_t n, CSCM_OBJECT **args)
 		&& action->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_for_each", \
 				CSCM_ERROR_BUILTIN_BAD_ACTION);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_for_each", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
+
+
+	if (seq == CSCM_NIL)
+		return CSCM_TRUE;
 
 
 	/*	cscm_apply below will try to free action every
@@ -447,7 +463,7 @@ CSCM_OBJECT *cscm_builtin_proc_for_each(size_t n, CSCM_OBJECT **args)
 
 
 	cscm_gc_dec(action);
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -466,9 +482,9 @@ CSCM_OBJECT *cscm_builtin_proc_filter(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *pred_result;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_filter",	\
-				2,					\
-				n,					\
+	cscm_builtin_check_args("cscm_builtin_proc_filter",	\
+				2,				\
+				n,				\
 				args);
 
 
@@ -480,9 +496,14 @@ CSCM_OBJECT *cscm_builtin_proc_filter(size_t n, CSCM_OBJECT **args)
 		&& pred->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_filter", \
 				CSCM_ERROR_BUILTIN_BAD_PRED);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_filter", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
+
+
+	if (seq == CSCM_NIL)
+		return CSCM_NIL;
 
 
 	/*	cscm_apply below will try to free pred every
@@ -579,9 +600,9 @@ CSCM_OBJECT *cscm_builtin_proc_accumulate(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *ret;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_accumulate",	\
-				3,					\
-				n,					\
+	cscm_builtin_check_args("cscm_builtin_proc_accumulate",	\
+				3,				\
+				n,				\
 				args);
 
 
@@ -594,7 +615,8 @@ CSCM_OBJECT *cscm_builtin_proc_accumulate(size_t n, CSCM_OBJECT **args)
 		&& proc->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_accumulate", \
 				CSCM_ERROR_BUILTIN_BAD_PROC);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_accumulate", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
 
@@ -620,9 +642,9 @@ CSCM_OBJECT *cscm_builtin_proc_fold_left(size_t n, CSCM_OBJECT **args)
 	CSCM_OBJECT *last_result;
 
 
-	cscm_builtin_check_args("cscm_builtin_proc_list_fold_left",	\
-				3,					\
-				n,					\
+	cscm_builtin_check_args("cscm_builtin_proc_fold_left",	\
+				3,				\
+				n,				\
 				args);
 
 
@@ -635,9 +657,14 @@ CSCM_OBJECT *cscm_builtin_proc_fold_left(size_t n, CSCM_OBJECT **args)
 		&& proc->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_fold_left", \
 				CSCM_ERROR_BUILTIN_BAD_PROC);
-	else if (seq->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (seq->type != CSCM_OBJECT_TYPE_PAIR \
+		&& seq != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_fold_left", \
 				CSCM_ERROR_BUILTIN_BAD_SEQ);
+
+
+	if (seq == CSCM_NIL)
+		return initial;
 
 
 	/*	cscm_apply below will try to free proc every

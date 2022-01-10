@@ -1,6 +1,6 @@
 /* error.c -- error handling
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@ void cscm_error_report(char *func, char *msg)
 
 
 	fprintf(stderr, "%s(): %s\n", func, msg);
+	fprintf(stderr, "EF NUMBER: %lu\n", \
+		(unsigned long)cscm_ef_get_number());
+
 
 	if (!cscm_ef_backtrace_is_empty())
 		puts("\n-------------------- BACKTRACE --------------------");
@@ -71,6 +74,9 @@ void cscm_runtime_error_report(char *object_name, char *msg)
 
 
 	fprintf(stderr, "\"%s\": %s\n", object_name, msg);
+	fprintf(stderr, "EF NUMBER: %lu\n", \
+		(unsigned long)cscm_ef_get_number());
+
 
 	if (!cscm_ef_backtrace_is_empty())
 		puts("\n-------------------- BACKTRACE --------------------");
@@ -100,6 +106,9 @@ void cscm_libc_fail(char *pos, char *name)
 
 
 	fprintf(stderr, "%s(): %s(): %s\n", pos, name, strerror(errno));
+	fprintf(stderr, "EF NUMBER: %lu\n", \
+		(unsigned long)cscm_ef_get_number());
+
 
 	if (!cscm_ef_backtrace_is_empty())
 		puts("\n-------------------- BACKTRACE --------------------");
@@ -128,6 +137,9 @@ void cscm_sigabrt_handler(int signum)
 
 
 	puts("cscheme received a SIGABRT signal");
+	fprintf(stderr, "EF NUMBER: %lu\n", \
+		(unsigned long)cscm_ef_get_number());
+
 
 	if (!cscm_ef_backtrace_is_empty())
 		puts("\n-------------------- BACKTRACE --------------------");

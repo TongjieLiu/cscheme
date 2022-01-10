@@ -1,6 +1,6 @@
 /* builtin.h -- cscheme standard library
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -177,6 +177,11 @@ CSCM_OBJECT *cscm_builtin_proc_min(size_t n, CSCM_OBJECT **args);
 
 CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args);
 CSCM_OBJECT *cscm_builtin_proc_not(size_t n, CSCM_OBJECT **args);
+
+
+
+
+CSCM_OBJECT *cscm_builtin_proc_error(size_t n, CSCM_OBJECT **args);
 
 
 

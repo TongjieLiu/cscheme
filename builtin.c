@@ -1,6 +1,6 @@
 /* builtin.c -- cscheme standard library
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "gc.h"
 #include "builtin.h"
 #include "builtin_seq.h"
+#include "builtin_symbol.h"
 
 
 
@@ -151,7 +152,7 @@ CSCM_OBJECT *cscm_builtin_proc_print(size_t n, CSCM_OBJECT **args)
 	}
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -171,7 +172,7 @@ CSCM_OBJECT *cscm_builtin_proc_printn(size_t n, CSCM_OBJECT **args)
 	fputc('\n', stdout);
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -186,7 +187,7 @@ CSCM_OBJECT *cscm_builtin_proc_display(size_t n, CSCM_OBJECT **args)
 	cscm_object_print(args[0], stdout);
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -201,7 +202,7 @@ CSCM_OBJECT *cscm_builtin_proc_newline(size_t n, CSCM_OBJECT **args)
 	fputc('\n', stdout);
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -222,7 +223,11 @@ CSCM_OBJECT *cscm_builtin_proc_read(size_t n, CSCM_OBJECT **args)
 	global_env = cscm_global_env_get();
 
 
+	if (feof(stdin))
+		clearerr(stdin);
+
 	list_ast = cscm_list_ast_build(stdin, "-");
+
 
 	list = cscm_ef_exec(cscm_analyze(list_ast), global_env);
 
@@ -258,7 +263,7 @@ CSCM_OBJECT *cscm_builtin_proc_set_car(size_t n, CSCM_OBJECT **args)
 	cscm_pair_set_car(pair, obj);
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -285,7 +290,7 @@ CSCM_OBJECT *cscm_builtin_proc_set_cdr(size_t n, CSCM_OBJECT **args)
 	cscm_pair_set_cdr(pair, obj);
 
 
-	return NULL;
+	return CSCM_TRUE;
 }
 
 
@@ -1100,37 +1105,34 @@ CSCM_OBJECT *cscm_builtin_proc_equal_ssb(size_t n, CSCM_OBJECT **args)
 			cscm_error_report("cscm_builtin_proc_equal_ssb", \
 					CSCM_ERROR_BOOL_EXTRA_COPY);
 
+		if (x == y)
+			return CSCM_TRUE;
+		else
+			return CSCM_FALSE;
+	} else if (x->type == CSCM_OBJECT_TYPE_SYMBOL \
+		&& y->type == CSCM_OBJECT_TYPE_SYMBOL) {
+		text_x = cscm_symbol_get(x);
+		text_y = cscm_symbol_get(y);
 
+		if (!strcmp(text_x, text_y))
+			return CSCM_TRUE;
+		else
+			return CSCM_FALSE;
+	} else if (x->type == CSCM_OBJECT_TYPE_STRING \
+		&& y->type == CSCM_OBJECT_TYPE_STRING) {
+		text_x = cscm_string_get(x);
+		text_y = cscm_string_get(y);
+
+		if (!strcmp(text_x, text_y))
+			return CSCM_TRUE;
+		else
+			return CSCM_FALSE;
+	} else { // in all other situations, compare addresses
 		if (x == y)
 			return CSCM_TRUE;
 		else
 			return CSCM_FALSE;
 	}
-
-
-	if (x->type == CSCM_OBJECT_TYPE_SYMBOL)
-		text_x = cscm_symbol_get(x);
-	else if (x->type == CSCM_OBJECT_TYPE_STRING)
-		text_x = cscm_string_get(x);
-	else
-		cscm_error_report("cscm_builtin_proc_equal_ssb", \
-				CSCM_ERROR_OBJECT_TYPE);
-
-
-	if (y->type == CSCM_OBJECT_TYPE_SYMBOL)
-		text_y = cscm_symbol_get(y);
-	else if (y->type == CSCM_OBJECT_TYPE_STRING)
-		text_y = cscm_string_get(y);
-	else
-		cscm_error_report("cscm_builtin_proc_equal_ssb", \
-				CSCM_ERROR_OBJECT_TYPE);
-
-
-	if (!strcmp(text_x, text_y))
-		return CSCM_TRUE;
-	else
-		return CSCM_FALSE;
-
 }
 
 
@@ -1157,21 +1159,8 @@ CSCM_OBJECT *cscm_builtin_proc_equal(size_t n, CSCM_OBJECT **args)
 		(y->type == CSCM_OBJECT_TYPE_NUM_LONG			\
 	 	|| y->type == CSCM_OBJECT_TYPE_NUM_DOUBLE))
 		return cscm_builtin_proc_equal_num(n, args);		
-	else if ((x->type == CSCM_OBJECT_TYPE_SYMBOL			\
-		&& y->type == CSCM_OBJECT_TYPE_SYMBOL)			\
-		||							\
-		(x->type == CSCM_OBJECT_TYPE_STRING			\
-	 	&& y->type == CSCM_OBJECT_TYPE_STRING)			\
-		||							\
-		((x->type == CSCM_OBJECT_TYPE_BOOL_TRUE			\
-			|| x->type == CSCM_OBJECT_TYPE_BOOL_FALSE)	\
-		&& (y->type == CSCM_OBJECT_TYPE_BOOL_TRUE		\
-			|| y->type == CSCM_OBJECT_TYPE_BOOL_FALSE)))
-
-		return cscm_builtin_proc_equal_ssb(n, args);		
 	else
-		cscm_error_report("cscm_builtin_proc_equal", \
-				CSCM_ERROR_OBJECT_TYPE);
+		return cscm_builtin_proc_equal_ssb(n, args);		
 }
 
 
@@ -1325,6 +1314,7 @@ CSCM_OBJECT *cscm_builtin_proc_is_nil(size_t n, CSCM_OBJECT **args)
 
 CSCM_BUILTIN_MODULE _cscm_builtin_module_list[] = {
 	{0, "seq", cscm_builtin_module_func_seq},
+	{0, "symbol", cscm_builtin_module_func_symbol},
 
 	{1, NULL, NULL}
 };
@@ -1354,7 +1344,7 @@ CSCM_OBJECT *cscm_builtin_proc_include(size_t n, CSCM_OBJECT **args)
 	for (mod = _cscm_builtin_module_list; !(mod->flag_last); mod++) {
 		if (cscm_string_text_equal(mod_name, mod->mod_name)) {
 			mod->f();
-			return NULL;
+			return CSCM_TRUE;
 		}
 	}
 
@@ -1556,22 +1546,30 @@ CSCM_OBJECT *cscm_builtin_proc_apply(size_t n, CSCM_OBJECT **args)
 		&& proc->type != CSCM_OBJECT_TYPE_PROC_COMP)
 		cscm_error_report("cscm_builtin_proc_apply", \
 				CSCM_ERROR_OBJECT_TYPE);
-	else if (arg_list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (arg_list->type != CSCM_OBJECT_TYPE_PAIR \
+		&& arg_list != CSCM_NIL)
 		cscm_error_report("cscm_builtin_proc_apply", \
 				CSCM_ERROR_OBJECT_TYPE);
 
-
-	len = cscm_list_get_len(arg_list);
-	arg_obj_ptrs = cscm_list_to_object_ptrs(arg_list);
 
 	/*	cscm_apply below will try to free proc, but when
 	 * cscm_builtin_proc_apply returns, the outside cscm_apply
 	 * will try to free it the second time */
 	cscm_gc_inc(proc);
-	ret = cscm_apply(proc, len, arg_obj_ptrs);
-	cscm_gc_dec(proc);
 
-	free(arg_obj_ptrs);
+
+	if (arg_list == CSCM_NIL) {
+		ret = cscm_apply(proc, 0, NULL);
+		cscm_gc_dec(proc);
+	} else {
+		len = cscm_list_get_len(arg_list);
+		arg_obj_ptrs = cscm_list_to_object_ptrs(arg_list);
+
+		ret = cscm_apply(proc, len, arg_obj_ptrs);
+		cscm_gc_dec(proc);
+
+		free(arg_obj_ptrs);
+	}
 
 
 	return ret;
@@ -1604,4 +1602,33 @@ CSCM_OBJECT *cscm_builtin_proc_not(size_t n, CSCM_OBJECT **args)
 				CSCM_ERROR_BOOL_EXTRA_COPY);
 	else
 		return CSCM_FALSE;
+}
+
+
+
+
+CSCM_OBJECT *cscm_builtin_proc_error(size_t n, CSCM_OBJECT **args)
+{
+	int i;
+
+
+	cscm_builtin_check_lb_args("cscm_builtin_proc_error",	\
+				0,				\
+				n,				\
+				args);
+
+
+	if (n >= 1) {
+		cscm_object_print(args[0], stderr);
+
+		for (i = 1; i < n; i++) {
+			fputc(' ', stderr);
+			cscm_object_print(args[i], stderr);
+		}
+	}
+
+	fputc('\n', stderr);
+
+
+	exit(1);
 }

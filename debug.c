@@ -1,6 +1,6 @@
 /* debug.c -- cscheme debug mode
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "ast.h"
 #include "env.h"
 #include "object.h"
+#include "text.h"
 #include "debug.h"
 
 
@@ -134,11 +135,11 @@ int _cscm_debug_cmd_handler_help(CSCM_OBJECT *env)
 				CSCM_ERROR_DEBUG_OPTION_N);
 
 
-	puts("help -- show docs");
+	puts("help -- show command documentations");
 	puts("print variable -- print variable value");
 	puts("next [times] -- continue with next execution function");
-	puts("env -- print current environment informations");
-	puts("frame -- print current frame informations");
+	puts("env -- print current environment");
+	puts("frame [index]-- print current/specified frame");
 	puts("backtrace -- print execution function stack");
 
 
@@ -170,7 +171,8 @@ int _cscm_debug_cmd_handler_print(CSCM_OBJECT *env)
 
 int _cscm_debug_cmd_handler_next(CSCM_OBJECT *env)
 {
-	int times;
+	long times;
+	char *option_times;
 
 
 	if (_cscm_debug_cmd_count == 1) {
@@ -182,10 +184,15 @@ int _cscm_debug_cmd_handler_next(CSCM_OBJECT *env)
 	}
 
 
-	times = atoi(_cscm_debug_cmd_vector[1]);
+	option_times = _cscm_debug_cmd_vector[1];
+	if (!cscm_text_is_integer(option_times))
+		cscm_error_report("cscm_debug_cmd_handler_next", \
+				CSCM_ERROR_DEBUG_CMD_NEXT_NOT_TIMES);
+
+	times = atol(option_times);
 	if (times <= 0)
 		cscm_error_report("cscm_debug_cmd_handler_next", \
-				CSCM_ERROR_DEBUG_CMD_NEXT_TIMES);
+				CSCM_ERROR_DEBUG_CMD_NEXT_NEG_TIMES);
 	_cscm_debug_next = times - 1;
 
 
@@ -213,16 +220,34 @@ int _cscm_debug_cmd_handler_env(CSCM_OBJECT *env)
 
 int _cscm_debug_cmd_handler_frame(CSCM_OBJECT *env)
 {
+	long index;
+	char *option_index;
+
 	CSCM_ENV *real_env;
 
 
-	if (_cscm_debug_cmd_count != 1)
+	if (_cscm_debug_cmd_count == 1) {
+		index = 0;
+	} else if (_cscm_debug_cmd_count > 2) {
 		cscm_error_report("cscm_debug_cmd_handler_frame", \
 				CSCM_ERROR_DEBUG_OPTION_N);
+	} else {
+		option_index = _cscm_debug_cmd_vector[1];
+		if (!cscm_text_is_integer(option_index))
+			cscm_error_report("cscm_debug_cmd_handler_frame", \
+					CSCM_ERROR_DEBUG_CMD_FRAME_INDEX);
+
+		index = atol(option_index);
+	}
 
 
 	real_env = (CSCM_ENV *)env->value;
-	cscm_frame_print_details(real_env->frames[0], "");
+
+	if (index < 0 || index >= real_env->n_frames)
+		cscm_error_report("cscm_debug_cmd_handler_frame", \
+				CSCM_ERROR_DEBUG_CMD_FRAME_INDEX);
+
+	cscm_frame_print_details(real_env->frames[index], "");
 
 
 	return CSCM_DEBUG_CMD_RET_CONTINUE;
@@ -282,7 +307,9 @@ void cscm_debug_shell_start(CSCM_EF *ef, CSCM_OBJECT *env)
 
 
 	exp = ef->exp;
-	printf("NEXT: %s:%lu: ", exp->filename, (unsigned long)exp->line);
+	printf("NEXT: %s:%lu: ",	\
+		exp->filename,		\
+		(unsigned long)exp->line);
 	cscm_ast_print_tree(exp);
 	puts("");
 
@@ -297,6 +324,8 @@ void cscm_debug_shell_start(CSCM_EF *ef, CSCM_OBJECT *env)
 	while (ret != CSCM_DEBUG_CMD_RET_EXIT)
 	{
 		fputs(CSCM_DEBUG_SHELL_PROMPT, stdout);
+		fflush(stdout);
+
 		_cscm_debug_parse_cmd();
 
 

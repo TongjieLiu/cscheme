@@ -1,6 +1,6 @@
-; A scheme evaluator & a register-machine simulator & a scheme compiler
+; A scheme interpreter & a register-machine simulator & a scheme compiler
 ;
-; Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+; Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 ;
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 ; Table of Contents
 ; SECTION 1: Basic Tools
-; SECTION 2: The Explicit-Control Evaluator
+; SECTION 2: The Explicit-Control Evaluator/Interpreter
 ; SECTION 3: The Register-Machine Simulator
 ; SECTION 4: The Compiler
 ; SECTION 5: Syntax Procedures
@@ -25,7 +25,7 @@
 ;
 ;
 ; Interfaces
-;     Evaluator:     1. (make-eceval)
+;     Interpreter:   1. (make-eceval)
 ;                    2. (eceval-start)
 ;                    3. (eceval-debug)
 ;
@@ -53,6 +53,7 @@
 
 
 (include "seq")
+(include "symbol")
 
 
 
@@ -107,7 +108,7 @@
 
 
 
-; --- SECTION 2: The Explicit-Control Evaluator ---
+; --- SECTION 2: The Explicit-Control Evaluator/Interpreter ---
 (define LOAD-PREDEFINED-PROCEDURES
     (list (list "tests"
                 '(begin (define (tagged-list? alist type-tag)
@@ -171,8 +172,10 @@
     (if (not eceval)
 	(error "ECEVAL START: No available eceval instance"))
 
+    (set! eceval-error do-eceval-error)
+
     (set-register-contents! eceval 'flag #f)
-    (set-register-contents! eceval 'mode 'READ-EVAL-PRINT)
+    (set-register-contents! eceval 'mode 'INTERPRETER)
     (start eceval))
 
 
@@ -349,8 +352,11 @@
     ((default-eceval-error 'set-ecc) ecc-object))
 
 
-(define (eceval-error . error-messages)
+(define (do-eceval-error . error-messages)
     ((default-eceval-error 'report) error-messages))
+
+
+(define eceval-error #f)
 
 
 
@@ -371,31 +377,30 @@
 (assign env (op environment-get-global-environment))
 (assign compapp (label apply-compound-procedure))
 
-(branch (label run-compiled-object-program))
+; (branch (label run-compiled-object-program))
 
 
 driver-loop
     (perform (op stack-initialize))
 
-    (perform (op printn) (const "EC-EVAL INPUT>"))
+    (test (op eq?) (reg mode) (const INTERPRETER))
+    (branch (label driver-loop-interpreter))
+
+    (goto (label driver-loop-compiler))
+
+driver-loop-interpreter
+    (perform (op print) (const "EC-EVAL INPUT> "))
     
     (assign exp (op read))
     (assign env (op environment-get-global-environment))
 
-    (test (op eq?) (reg mode) (const READ-EVAL-PRINT))
-    (branch (label driver-loop-REP))
-
-    (assign val (op compile-and-assemble) (reg exp))
-    (goto (label run-compiled-object-program))
-
-driver-loop-REP
     (assign continue (label driver-loop-print-result))
     (goto (label eval))
 
 
 driver-loop-print-result
-    (perform (op stack-print-statistics))
-    (perform (op print) (const "EC-EVAL RESULT> "))
+;    (perform (op stack-print-statistics))
+    (perform (op print) (const "RESULT> "))
     (perform (op eceval-user-printn) (reg val))
 
     (goto (label driver-loop))
@@ -438,29 +443,23 @@ error-unexpected-procedure-type
 
 
 error-unbound-variable
-    (assign val (reg ecc))
-    (goto (label error-report))
-
-
 error-variables-values-do-not-match
-    (assign val (reg ecc))
-    (goto (label error-report))
-
-
 error-cond->if
-    (assign val (reg ecc))
-    (goto (label error-report))
-
-
 error-apply-primitive
+error-load-no-proc
     (assign val (reg ecc))
     (goto (label error-report))
 
 
 
 
-run-compiled-object-program
-    (perform (op stack-initialize))
+driver-loop-compiler
+    (perform (op print) (const "COMPILER> "))
+    
+    (assign exp (op read))
+    (assign env (op environment-get-global-environment))
+
+    (assign val (op compile-and-assemble) (reg exp))
 
     (assign continue (label driver-loop-print-result))
     (goto (reg val))
@@ -915,9 +914,15 @@ eval-definition-after-eval-value-expression
 
 
 
-eval-load
+eval-load ; using evaluator, not compiler
+    (assign ecc (op get-false))
+
     (assign exp (op load-procedure-name) (reg exp))
     (assign exp (op load-get-procedure-definition) (reg exp))
+
+    (test (op true?) (reg ecc))
+    (branch (label error-load-no-proc))
+
     (goto (label eval))))
 
 
@@ -1536,7 +1541,7 @@ eval-load
 
 
 (define (instruction-breakpoint-name inst)
-    (cadddr inst))
+    (car (cdddr inst)))
 
 
 (define (instruction-set-breakpoint-name! inst breakpoint-name)
@@ -1929,9 +1934,7 @@ eval-load
 	    (let ((n label-number))
 	        (set! label-number
 		      (+ label-number 1))
-		(string->symbol
-		    (string-append (symbol->string prefix)
-				   (number->string n)))))))
+		(symbol-append prefix (symbol n))))))
 
 
 (define make-compiler-label (make-compiler-label-generator))
@@ -2013,9 +2016,10 @@ eval-load
     (if (not eceval)
 	(error "COMPILER START: No available eceval instance"))
 
+        (set! eceval-error error)
 
 	(set-register-contents! eceval 'flag #f)
-	(set-register-contents! eceval 'mode 'READ-COMPILE-EXECUTE-PRINT)
+	(set-register-contents! eceval 'mode 'COMPILER)
 
 	(start eceval))
 
@@ -2598,7 +2602,7 @@ eval-load
 (define (if-alternative-expression exp)
     (if (null? (cdddr exp))
 	'none
-	(cadddr exp)))
+	(car (cdddr exp))))
 
 
 (define (make-if predicate consequence alternative)
@@ -2827,10 +2831,10 @@ eval-load
 (define (compound-procedure-body cproc) (caddr cproc))
 
 
-(define (compound-procedure-environment cproc) (cadddr cproc))
+(define (compound-procedure-environment cproc) (car (cdddr cproc)))
 
 
-(define (compound-procedure-number cproc) (car (cddddr cproc)))
+(define (compound-procedure-number cproc) (car (cdr (cdddr cproc))))
 
 
 
@@ -2863,7 +2867,7 @@ eval-load
 (define (compiled-procedure-environment cproc) (caddr cproc))
 
 
-(define (compiled-procedure-number cproc) (cadddr cproc))
+(define (compiled-procedure-number cproc) (car (cdddr cproc)))
 
 
 
@@ -3198,8 +3202,10 @@ eval-load
 
 
 ; --- SECTION 6: Examples ---
-; A. an interactive scheme compiler
+; A. an interactive scheme interpreter
 (make-eceval)
-(printn "a register-machine is created for running compiled programs")
+(eceval-start)
 
-(compiler-start)
+; B. an interactive scheme compiler
+; (make-eceval)
+; (compiler-start)

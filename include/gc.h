@@ -1,6 +1,6 @@
 /* gc.h -- garbage collection
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,6 +50,11 @@ void cscm_gc_free(CSCM_OBJECT *obj);
 
 
 void cscm_gc_show_total_object_count(char *stage);
+
+
+
+
+#define CSCM_ERROR_GC_ZERO_RC		"reference count equals zero"
 
 
 

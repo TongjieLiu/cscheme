@@ -1,6 +1,6 @@
 /* proc.c -- scheme procedure
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -363,6 +363,7 @@ void cscm_proc_comp_free(CSCM_OBJECT *obj)
 	 * 	More importantly, params and body are not scheme objects,
 	 * therefore they don't have reference counts used in keeping
 	 * themselves from being freed. */
+	cscm_gc_dec(proc->env);
 	cscm_gc_free(proc->env);
 
 	free(proc);

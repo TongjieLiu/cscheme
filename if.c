@@ -1,6 +1,6 @@
 /* if.c -- scheme if expression(special form)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -110,8 +110,9 @@ CSCM_OBJECT *_cscm_if_ef(void *state, CSCM_OBJECT *env)
 		if (s->alternative_ef) {
 			ef = s->alternative_ef;
 
-			if (ef->type != CSCM_EF_TYPE_COMBINATION \
-				&& ef->type != CSCM_EF_TYPE_IF)
+			if (ef->type != CSCM_EF_TYPE_COMBINATION	\
+				&& ef->type != CSCM_EF_TYPE_IF		\
+				&& ef->type != CSCM_EF_TYPE_SEQ)
 				cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 			ret = cscm_ef_exec(ef, env);
@@ -121,8 +122,9 @@ CSCM_OBJECT *_cscm_if_ef(void *state, CSCM_OBJECT *env)
 	} else {
 		ef = s->consequent_ef;
 
-		if (ef->type != CSCM_EF_TYPE_COMBINATION \
-			&& ef->type != CSCM_EF_TYPE_IF)
+		if (ef->type != CSCM_EF_TYPE_COMBINATION	\
+			&& ef->type != CSCM_EF_TYPE_IF		\
+			&& ef->type != CSCM_EF_TYPE_SEQ)
 			cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
 		ret = cscm_ef_exec(ef, env);

@@ -1,6 +1,6 @@
 /* let.c -- scheme let expression(syntactic sugar)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ CSCM_EF *cscm_analyze_let(CSCM_AST_NODE *exp)
 	/* constructing the new lambda expression */
 	proc = cscm_ast_exp_create("<transformation>", 0);
 
-	lambda = cscm_ast_symbol_create("transformation", 0);
+	lambda = cscm_ast_symbol_create("<transformation>", 0);
 	cscm_ast_symbol_set(lambda, "lambda");
 
 	cscm_ast_exp_append(proc, lambda);

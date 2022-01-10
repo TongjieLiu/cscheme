@@ -1,6 +1,6 @@
 /* num.h -- scheme number: long and double
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,11 @@
 #include "object.h"
 #include "ef.h"
 #include "ast.h"
+
+
+
+
+#define CSCM_NUM_MAX_TEXT_LEN		25
 
 
 

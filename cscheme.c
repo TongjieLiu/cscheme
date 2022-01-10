@@ -1,6 +1,6 @@
 /* cscheme.c -- the entry point
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -196,6 +196,19 @@ void cscm_print_seq_docs()
 
 
 
+void cscm_print_symbol_docs()
+{
+	puts("======================= symbol ========================");
+	puts("(symbol number) -> symbol");
+	puts("(symbol symbol) -> symbol");
+	puts("(symbol string) -> symbol\n");
+
+	puts("(symbol-append symbol1 [symbol2] [symbol3] ...)\n");
+}
+
+
+
+
 #define CSCM_DOCS_MSG \
 "	cscheme is consistent with Structure and Interpretation of Computer\n"  \
 "Programs, 2nd edition in function prototypes of all primitive procedures\n"    \
@@ -213,7 +226,10 @@ void cscm_print_docs()
 	puts("\n");
 
 	cscm_print_seq_docs();
-	// cscm_print_file_docs();
+
+	puts("\n");
+
+	cscm_print_symbol_docs();
 }
 
 
@@ -283,6 +299,7 @@ int main(int argc, char *argv[])
 
 	FILE *script;
 	char *script_name;
+	int flag_read_stdin;
 
 	char *option;
 	CSCM_OBJECT *option_obj;
@@ -302,13 +319,16 @@ int main(int argc, char *argv[])
 		cscm_gc_show_total_object_count("HANDLE-CLI-OPTIONS");
 	#endif
 
+	flag_read_stdin = 0;
 	if (argc == 1 || !strcmp(argv[1], "-")) {
 		if (argc > 2)
 			cscm_error_report("main", \
 					CSCM_ERROR_CSCHEME_ARGC);
 
 		script = stdin;
-		script_name = "<stdin>";
+		script_name = "-";
+
+		flag_read_stdin = 1;
 
 
 		internal_argc = cscm_num_long_create();
@@ -421,7 +441,8 @@ int main(int argc, char *argv[])
 	#endif
 	exp = cscm_ast_build(script, script_name);
 
-	fclose(script);
+	if (!flag_read_stdin)
+		fclose(script);
 
 
 	#ifdef __CSCM_CSCHEME_DEBUG__
@@ -436,6 +457,7 @@ int main(int argc, char *argv[])
 		cscm_gc_show_total_object_count("GLOBAL-ENV");
 	#endif
 	global_env = cscm_global_env_setup();
+	cscm_gc_inc(global_env);
 
 	cscm_env_add_var(global_env, "argc", internal_argc);
 	cscm_env_add_var(global_env, "argv", internal_argv);
@@ -468,6 +490,7 @@ int main(int argc, char *argv[])
 	}
 
 
+	cscm_gc_dec(global_env);
 	cscm_gc_free(global_env);
 
 

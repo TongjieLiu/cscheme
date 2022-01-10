@@ -1,6 +1,6 @@
 /* definition.c -- scheme definition(special form)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -176,14 +176,14 @@ CSCM_EF *cscm_analyze_definition(CSCM_AST_NODE *exp)
 
 	if (cscm_ast_is_exp(var)) {	// define a new compound procedure
 		proc = cscm_ast_exp_index(var, 0);
-		new_var = cscm_ast_symbol_create("transformation", 0);
+		new_var = cscm_ast_symbol_create("<transformation>", 0);
 		cscm_ast_symbol_set(new_var, proc->text);
 		cscm_ast_exp_drop_first(var);
 
-		lambda = cscm_ast_symbol_create("transformation", 0);
+		lambda = cscm_ast_symbol_create("<transformation>", 0);
 		cscm_ast_symbol_set(lambda, "lambda");
 
-		new_lambda_exp = cscm_ast_exp_create("transformation", 0);
+		new_lambda_exp = cscm_ast_exp_create("<transformation>", 0);
 		cscm_ast_exp_append(new_lambda_exp, lambda);
 		for (i = 1; i < exp->n_childs; i++)
 			cscm_ast_exp_append(new_lambda_exp, \

@@ -1,6 +1,6 @@
 /* core.c -- syntactic analysis
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -134,16 +134,21 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 	CSCM_OBJECT *ret;
 
+	int flag_tco_allow;
 	CSCM_PROC_PRIM_FUNC f;
 
 	CSCM_EF *body_ef;
 	CSCM_OBJECT *env;
 	size_t n_params;
 	char **params;
-	int flag_dtn;
 
-	CSCM_OBJECT *arg_buf;
+	int flag_dtn;
+	size_t n_required_args;
+	CSCM_OBJECT **arguments;
+
 	CSCM_OBJECT *frame;
+
+	CSCM_AST_NODE *exp;
 
 
 	if (proc == NULL)
@@ -155,8 +160,11 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 
 	if (proc->type == CSCM_OBJECT_TYPE_PROC_PRIM) {
-		f = cscm_proc_prim_get_f(proc);
+		flag_tco_allow = cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW);
+		cscm_tco_unset_flag(CSCM_TCO_FLAG_ALLOW);
 
+
+		f = cscm_proc_prim_get_f(proc);
 		ret = f(n_args, args);
 
 
@@ -168,6 +176,10 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 		if (ret)
 			cscm_gc_dec(ret);
+
+
+		if (flag_tco_allow) // restore the original value of the flag
+			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 	} else if (proc->type == CSCM_OBJECT_TYPE_PROC_COMP) {
 		body_ef = cscm_proc_comp_get_body(proc);
 		env = cscm_proc_comp_get_env(proc);
@@ -177,38 +189,58 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 
 		if (flag_dtn) { // at least 1 formal parameter
-			if (n_args < (n_params - 1))
+			n_required_args = n_params - 1;
+
+			if (n_args < n_required_args) {
 				cscm_error_report("cscm_apply", \
 						CSCM_ERROR_APPLY_N_ARGS);
+			} else if (n_args == n_required_args) {
+				arguments = cscm_object_ptrs_create(n_params);
 
-			if (n_args == 0)
-				args = &arg_buf;
+				for (i = 0; i < n_required_args; i++)
+					arguments[i] = args[i];
 
-			args[n_params - 1] = cscm_list_create(		\
+				arguments[i] = CSCM_NIL;
+			} else {
+				args[n_params - 1] =			\
+						cscm_list_create(	\
 						n_args - n_params + 1,	\
 						&args[n_params - 1]);
+
+				arguments = args;
+			}
 		} else {
 			if (n_args != n_params)
 				cscm_error_report("cscm_apply", \
 						CSCM_ERROR_APPLY_N_ARGS);
+
+			arguments = args;
 		}
 
 
 		frame = cscm_frame_create();
 
-		if (n_args > 0)
+		if (n_params > 0)
 			cscm_frame_init(frame,		\
 					n_params,	\
 					params,		\
-					args);
+					arguments);
+
+		if (arguments != args)
+			free(arguments);
 
 		env = cscm_env_cpy_extend(env, frame);
+		cscm_gc_inc(env);
 
 
 		if (!cscm_tco_get_flag(CSCM_TCO_FLAG_ALLOW)) {
 			cscm_tco_set_flag(CSCM_TCO_FLAG_ALLOW);
 		} else {
-			cscm_tco_state_save(env, body_ef);
+			/* get current exp as the next exp */
+			exp = cscm_ef_backtrace_pop();
+			cscm_ef_backtrace_push(exp);
+
+			cscm_tco_state_save(env, body_ef, exp);
 			return NULL;
 		}
 
@@ -216,10 +248,14 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 
 		while (cscm_tco_get_flag(CSCM_TCO_FLAG_STATE_SAVED)) {
+			cscm_gc_dec(env);
 			cscm_gc_free(env);
 
-			env = cscm_tco_state_get_new_env();
-			body_ef = cscm_tco_state_get_new_body_ef();
+			cscm_tco_state_get(&env, &body_ef, &exp);
+
+			/* replace current exp with next exp*/
+			cscm_ef_backtrace_pop();
+			cscm_ef_backtrace_push(exp);
 
 			cscm_tco_unset_flag(CSCM_TCO_FLAG_STATE_SAVED);
 
@@ -231,9 +267,11 @@ CSCM_OBJECT *cscm_apply(CSCM_OBJECT *proc, \
 
 		if (ret) {
 			cscm_gc_inc(ret); // try to save it from freeing env
+			cscm_gc_dec(env);
 			cscm_gc_free(env);
 			cscm_gc_dec(ret);
 		} else {
+			cscm_gc_dec(env);
 			cscm_gc_free(env);
 		}
 	} else {

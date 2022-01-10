@@ -1,6 +1,6 @@
 /* assignment.c -- scheme assignment(special form)
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 #include "num.h"
 #include "str.h"
 #include "var.h"
+#include "bool.h"
+#include "gc.h"
 #include "assignment.h"
 
 
@@ -118,10 +120,19 @@ CSCM_OBJECT *_cscm_assignment_ef(void *state, CSCM_OBJECT *env)
 
 	val = cscm_ef_exec(s->val_ef, env);
 
+	/*	cscm_env_set_var will try to free the old value, and
+	 * the new value may be freed in the process when the new is
+	 * referenced by the old. */
+	cscm_gc_inc(val);
+
 	cscm_env_set_var(env, s->var, val);
+	cscm_gc_dec(val);
+	
 
-
-	return NULL;
+	/*	Allow procedure argument to be a procedure that has
+	 * a set! expression at last, since procedures in cscheme do
+	 * not accept NULLs as their arguments. */
+	return CSCM_TRUE;
 }
 
 

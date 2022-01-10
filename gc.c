@@ -1,6 +1,6 @@
 /* gc.c -- garbage collection
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -72,6 +72,14 @@ void cscm_gc_dec(CSCM_OBJECT *obj)
 	if (obj == NULL)
 		cscm_error_report("cscm_gc_dec", \
 				CSCM_ERROR_NULL_PTR);
+	else if (obj == CSCM_NIL	\
+		|| obj == CSCM_TRUE	\
+		|| obj == CSCM_FALSE	\
+		|| obj == CSCM_UNASSIGNED)
+		return; // allow these objects to have zero reference count
+	else if (obj->ref_count == 0)
+		cscm_error_report("cscm_gc_dec", \
+				CSCM_ERROR_GC_ZERO_RC);
 
 
 	obj->ref_count--;

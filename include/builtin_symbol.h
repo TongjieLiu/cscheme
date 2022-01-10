@@ -1,6 +1,6 @@
-/* symbol.h -- scheme symbol
+/* builtin_symbol.h -- cscheme standard library module: symbol
 
-   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,51 +15,25 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#ifndef __CSCM_SYMBOL_H__
+#ifndef __CSCM_BUILTIN_SYMBOL_H__
 
-#define __CSCM_SYMBOL_H__
-
-
-
-
-#include "object.h"
-#include "ef.h"
-#include "ast.h"
+#define __CSCM_BUILTIN_SYMBOL_H__
 
 
 
 
-CSCM_OBJECT *cscm_symbol_create();
-
-
-void cscm_symbol_set(CSCM_OBJECT *symbol, char *text);
-void cscm_symbol_set_simple(CSCM_OBJECT *symbol, char *text);
-
-
-char *cscm_symbol_get(CSCM_OBJECT *symbol);
+#include <stddef.h>
 
 
 
 
-void cscm_symbol_print(CSCM_OBJECT *obj, FILE *stream);
+CSCM_OBJECT *cscm_builtin_proc_symbol(size_t n, CSCM_OBJECT **args);
+CSCM_OBJECT *cscm_builtin_proc_symbol_append(size_t n, CSCM_OBJECT **args);
 
 
 
 
-int cscm_is_symbol(CSCM_AST_NODE *exp);
-
-
-CSCM_EF *cscm_analyze_symbol(CSCM_AST_NODE *exp);
-
-
-
-
-void cscm_symbol_free(CSCM_OBJECT *obj);
-
-
-
-
-void cscm_symbol_ef_free(CSCM_EF *ef);
+void cscm_builtin_module_func_symbol();
 
 
 

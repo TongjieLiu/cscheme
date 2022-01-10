@@ -1,6 +1,6 @@
 /* pair.c -- scheme pair and list
 
-   Copyright (C) 2021 Tongjie Liu <tongjieandliu@gmail.com>.
+   Copyright (C) 2021-2022 Tongjie Liu <tongjieandliu@gmail.com>.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -79,9 +79,23 @@ void cscm_pair_set(CSCM_OBJECT *pair_obj, void *car, void *cdr)
 
 	pair = (CSCM_PAIR *)pair_obj->value;
 
+	if (pair->car) {
+		cscm_gc_dec(pair->car);
+		cscm_gc_free(pair->car);
+	}
+
+	if (pair->cdr) {
+		cscm_gc_dec(pair->cdr);
+		cscm_gc_free(pair->cdr);
+	}
+
 
 	pair->car = car;
 	pair->cdr = cdr;
+
+
+	cscm_gc_inc(car);
+	cscm_gc_inc(cdr);
 }
 
 
@@ -305,9 +319,14 @@ CSCM_OBJECT *cscm_list_cpy(CSCM_OBJECT *list)
 	if (list == NULL)
 		cscm_error_report("cscm_list_cpy", \
 				CSCM_ERROR_NULL_PTR);
-	else if (list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (list->type != CSCM_OBJECT_TYPE_PAIR \
+		&& list != CSCM_NIL)
 		cscm_error_report("cscm_list_cpy", \
 				CSCM_ERROR_OBJECT_TYPE);
+
+
+	if (list == CSCM_NIL)
+		return CSCM_NIL;
 
 
 	new_pair = cscm_pair_create();
@@ -356,9 +375,14 @@ CSCM_OBJECT *cscm_list_reverse(CSCM_OBJECT *list)
 	if (list == NULL)
 		cscm_error_report("cscm_list_reverse", \
 				CSCM_ERROR_NULL_PTR);
-	else if (list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (list->type != CSCM_OBJECT_TYPE_PAIR \
+		&& list != CSCM_NIL)
 		cscm_error_report("cscm_list_reverse", \
 				CSCM_ERROR_OBJECT_TYPE);
+
+
+	if (list == CSCM_NIL)
+		return CSCM_NIL;
 
 
 	src = list;
@@ -403,10 +427,19 @@ CSCM_OBJECT *cscm_list_append(CSCM_OBJECT *x, CSCM_OBJECT *y)
 	if (x == NULL || y == NULL)
 		cscm_error_report("cscm_list_append", \
 				CSCM_ERROR_NULL_PTR);
-	else if (x->type != CSCM_OBJECT_TYPE_PAIR \
-		|| y->type != CSCM_OBJECT_TYPE_PAIR)
+	else if ((x->type != CSCM_OBJECT_TYPE_PAIR	\
+		&& x != CSCM_NIL)			\
+		||					\
+		(y->type != CSCM_OBJECT_TYPE_PAIR	\
+		&& y != CSCM_NIL))
 		cscm_error_report("cscm_list_append", \
 				CSCM_ERROR_OBJECT_TYPE);
+
+
+	if (x == CSCM_NIL)
+		return y;
+	else if (y == CSCM_NIL)
+		return x;
 
 
 	new_pair = cscm_pair_create();
@@ -479,9 +512,14 @@ size_t cscm_list_get_len(CSCM_OBJECT *list)
 	if (list == NULL)
 		cscm_error_report("cscm_list_get_len", \
 				CSCM_ERROR_NULL_PTR);
-	else if (list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (list->type != CSCM_OBJECT_TYPE_PAIR \
+		&& list != CSCM_NIL)
 		cscm_error_report("cscm_list_get_len", \
 				CSCM_ERROR_OBJECT_TYPE);
+
+
+	if (list == CSCM_NIL)
+		return 0;
 
 
 	len = 0;
@@ -520,7 +558,7 @@ CSCM_OBJECT* cscm_list_index(CSCM_OBJECT *list, size_t index)
 	if (list == NULL)
 		cscm_error_report("cscm_list_index", \
 				CSCM_ERROR_NULL_PTR);
-	else if (list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (list->type != CSCM_OBJECT_TYPE_PAIR) // do not support nil
 		cscm_error_report("cscm_list_index", \
 				CSCM_ERROR_OBJECT_TYPE);
 
@@ -565,7 +603,7 @@ CSCM_OBJECT **cscm_list_to_object_ptrs(CSCM_OBJECT *list)
 	if (list == NULL)
 		cscm_error_report("cscm_list_to_object_ptrs", \
 				CSCM_ERROR_NULL_PTR);
-	else if (list->type != CSCM_OBJECT_TYPE_PAIR)
+	else if (list->type != CSCM_OBJECT_TYPE_PAIR) // do not support nil
 		cscm_error_report("cscm_list_to_object_ptrs", \
 				CSCM_ERROR_OBJECT_TYPE);
 
@@ -695,13 +733,16 @@ void cscm_pair_free(CSCM_OBJECT *obj)
 
 
 	car = cscm_pair_get_car(obj);
-	cscm_gc_dec(car);
-	cscm_gc_free(car);
-
+	if (car) {
+		cscm_gc_dec(car);
+		cscm_gc_free(car);
+	}
 
 	cdr = cscm_pair_get_cdr(obj);
-	cscm_gc_dec(cdr);
-	cscm_gc_free(cdr);
+	if (cdr) {
+		cscm_gc_dec(cdr);
+		cscm_gc_free(cdr);
+	}
 
 
 	free(obj->value);

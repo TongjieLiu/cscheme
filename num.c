@@ -191,7 +191,7 @@ void cscm_num_print(CSCM_OBJECT *obj, FILE *stream)
 		printf("%ld", *l);
 	} else if (obj->type == CSCM_OBJECT_TYPE_NUM_DOUBLE) {
 		d = (double *)obj->value;
-		printf("%f", *d);
+		printf("%.2f", *d);
 	} else {
 		cscm_error_report("cscm_num_print", \
 				CSCM_ERROR_OBJECT_TYPE);

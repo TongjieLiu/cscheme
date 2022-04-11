@@ -353,7 +353,7 @@ char *cscm_text_cpy_lowercase(char *text)
 
 
 
-// Criteria: ((+ | -) [0-9]) | [0-9]) [0-9]*
+// Criteria: (((+ | -) [1-9]) | [1-9]) [0-9]*) | 0
 int cscm_text_is_integer(char *text)
 {
 	char *p;
@@ -365,10 +365,12 @@ int cscm_text_is_integer(char *text)
 	
 		
 	if ((text[0] == '+' || text[0] == '-') \
-	    && (text[1] >= '0' && text[1] <= '9'))
+	    && (text[1] >= '1' && text[1] <= '9'))
 		p = &text[2];
-	else if (text[0] >= '0' && text[0] <= '9')
+	else if (text[0] >= '1' && text[0] <= '9')
 		p = &text[1];
+	else if (text[0] == '0' && text[1] == 0) // "0"
+		return 1;
 	else
 		return 0;
 
@@ -383,7 +385,7 @@ int cscm_text_is_integer(char *text)
 
 
 // "fpn" stands for "floating-point number"
-// Criteria: ((+ | -) [0-9]) | [0-9]) [0-9]* \. [0-9] [0-9]*
+// Criteria: (((((+ | -) [1-9]) | [1-9]) [0-9]*) | 0) \. [0-9] [0-9]*
 int cscm_text_is_fpn(char *text)
 {
 	char *p;
@@ -395,9 +397,11 @@ int cscm_text_is_fpn(char *text)
 	
 		
 	if ((text[0] == '+' || text[0] == '-') \
-		&& (text[1] >= '0' && text[1] <= '9'))
+		&& (text[1] >= '1' && text[1] <= '9'))
 		p = &text[2];
-	else if (text[0] >= '0' && text[0] <= '9')
+	else if (text[0] >= '1' && text[0] <= '9')
+		p = &text[1];
+	else if (text[0] == '0' && text[1] == '.') // "0.xxxx"
 		p = &text[1];
 	else
 		return 0;

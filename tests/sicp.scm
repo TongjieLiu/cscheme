@@ -933,21 +933,21 @@ eval-load ; using evaluator, not compiler
 	     (list (list 'true #t)
 		   (list 'false #f)))
 	  (eceval-primitive-procedures
-	     (list (list '< eceval-<)
-		   (list '> eceval->)
-		   (list '= eceval-=)
-		   (list '<= eceval-<=)
-		   (list '>= eceval->=)
+	     (list (list '< <)
+		   (list '> >)
+		   (list '= =)
+		   (list '<= <=)
+		   (list '>= >=)
 		   (list 'not not)
-		   (list '+ eceval-+)
-		   (list '- eceval--)
-		   (list '* eceval-*)
-		   (list '/ eceval-/)
-		   (list 'remainder eceval-remainder)
-	           (list 'car eceval-car)
-		   (list 'cdr eceval-cdr)
-		   (list 'set-car! eceval-set-car!)
-		   (list 'set-cdr! eceval-set-cdr!)
+		   (list '+ +)
+		   (list '- -)
+		   (list '* *)
+		   (list '/ /)
+		   (list 'remainder remainder)
+	           (list 'car car)
+		   (list 'cdr cdr)
+		   (list 'set-car! set-car!)
+		   (list 'set-cdr! set-cdr!)
 		   (list 'cons cons)
 		   (list 'eq? eq?)
 		   (list 'equal? equal?)
@@ -957,7 +957,8 @@ eval-load ; using evaluator, not compiler
 		   (list 'symbol? symbol?)
 		   (list 'list list)
 		   (list 'read read)
-		   (list 'print display)
+		   (list 'display display)
+		   (list 'print print)
 		   (list 'printn printn)
 	           (list 'compile-and-run compiler-run))))
         (let ((var-names (map car
@@ -978,82 +979,6 @@ eval-load ; using evaluator, not compiler
 (define (make-get-global-environment)
     (let ((env (make-global-environment)))
         (lambda () env)))
-
-
-
-
-(define (eceval-< a b)
-    (if (and (number? a) (number? b))
-	(< a b)
-	(eceval-error "<: arguments need both be number")))
-
-
-(define (eceval-> a b)
-    (if (and (number? a) (number? b))
-	(> a b)
-	(eceval-error ">: arguments need both be number")))
-
-(define (eceval-= a b)
-     (if (and (number? a) (number? b))
-	(= a b)
-	(eceval-error "=: arguments need both be number")))
-
-(define (eceval-<= a b)
-    (if (and (number? a) (number? b))
-	(<= a b)
-	(eceval-error "<=: arguments need both be number")))
-
-(define (eceval->= a b)
-    (if (and (number? a) (number? b))
-	(>= a b)
-	(eceval-error ">=: arguments need both be number")))
-
-(define (eceval-+ a b)
-    (if (and (number? a) (number? b))
-	(+ a b)
-	(eceval-error "+: arguments need both be number")))
-
-(define (eceval-- a b)
-     (if (and (number? a) (number? b))
-	(- a b)
-	(eceval-error "-: arguments need both be number")))
-
-(define (eceval-* a b)
-    (if (and (number? a) (number? b))
-	(* a b)
-	(eceval-error "*: arguments need both be number")))
-
-(define (eceval-/ a b)
-    (if (and (number? a) (number? b))
-	(if (= b 0)
-	    (eceval-error "/: divided by zero")
-	    (/ a b))
-	(eceval-error "/: arguments need both be number")))
-
-(define (eceval-remainder a b)
-    (if (and (number? a) (number? b))
-	(remainder a b)
-	(eceval-error "remainder: arguments need both be number")))
-
-(define (eceval-car x)
-    (if (pair? x)
-	(car x)
-	(eceval-error "car: the argument need be a pair")))
-
-(define (eceval-cdr x)
-    (if (pair? x)
-	(cdr x)
-	(eceval-error "cdr: the argument need be a pair")))
-
-(define (eceval-set-car! p val)
-    (if (pair? p)
-	(set-car! p val)
-	(eceval-error "set-car!: the first argument need be a pair")))
-
-(define (eceval-set-cdr! p val)
-    (if (pair? p)
-	(set-cdr! p val)
-	(eceval-error "set-cdr!: the first argument need be a pair")))
 
 
 

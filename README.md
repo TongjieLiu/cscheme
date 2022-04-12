@@ -11,7 +11,7 @@ To compile:
 ```
 make
 ```
-After this, you'll see a executable file called `cscheme` in the root
+After this, you'll see an executable file called `cscheme` in the root
 directory of the project.
 
 

@@ -146,7 +146,7 @@ void cscm_print_basic_docs()
 	puts("");
 
 	puts("(include module-name)");
-	puts("	module-name: seq");
+	puts("	module-name: \"seq\"");
 
 	puts("");
 
@@ -182,14 +182,14 @@ void cscm_print_seq_docs()
 	puts("(map proc seq) -> new-sequence");
 	puts("	proc: (proc current-item) -> item\n");
 
-	puts("for-each action seq)\n");
+	puts("(for-each action seq)\n");
 
-	puts("filter pred seq) -> new-sequence\n");
+	puts("(filter pred seq) -> new-sequence\n");
 
-	puts("accumulate proc initial seq) -> object");
+	puts("(accumulate proc initial seq) -> object");
 	puts("	proc: (proc current-item last-result)\n");
 
-	puts("fold-left proc initial seq) -> object");
+	puts("(fold-left proc initial seq) -> object");
 	puts("	proc: (proc last-result current-item)");
 }
 
